@@ -1,4 +1,5 @@
 
+import math
 import pandas as pd
 import numpy as np
 import re
@@ -59,228 +60,227 @@ def strToFloat(inputstring):
 
 
 
-def GPSdata(satellitt_id,time, finalTallList, finalSVList):
+def GPSdata(satellitt_id,time, values_list, SV):
     
     structured_dataG.loc[len(structured_dataG)]  = [
         satellitt_id,
         time,
-        finalSVList[0],
-        finalSVList[1],
-        finalSVList[2],
-        finalTallList[0],
-        finalTallList[1],
-        finalTallList[2],
-        finalTallList[3],
-        finalTallList[4],
-        finalTallList[5],
-        finalTallList[6],
-        finalTallList[7],
-        finalTallList[8],
-        finalTallList[9],
-        finalTallList[10],
-        finalTallList[11],
-        finalTallList[12],
-        finalTallList[13],
-        finalTallList[14],
-        finalTallList[15],
-        finalTallList[16],
-        finalTallList[17],
-        finalTallList[18],
-        finalTallList[19],
-        finalTallList[20],
-        finalTallList[21],
-        finalTallList[22],
-        finalTallList[23],
-        finalTallList[24],
-        finalTallList[25]
+        SV[0],
+        SV[1],
+        SV[2],
+        values_list[0],
+        values_list[1],
+        values_list[2],
+        values_list[3],
+        values_list[4],
+        values_list[5],
+        values_list[6],
+        values_list[7],
+        values_list[8],
+        values_list[9],
+        values_list[10],
+        values_list[11],
+        values_list[12],
+        values_list[13],
+        values_list[14],
+        values_list[15],
+        values_list[16],
+        values_list[17],
+        values_list[18],
+        values_list[19],
+        values_list[20],
+        values_list[21],
+        values_list[22],
+        values_list[23],
+        values_list[24],
+        values_list[25]
     ]
 
-def GLONASSdata(satellitt_id,time, finalTallList, finalSVList):
+def GLONASSdata(satellitt_id,time, values_list, SV):
 
     structured_dataR.loc[len(structured_dataR)] = [
         satellitt_id,
         time,
-        finalSVList[0],
-        finalSVList[1],
-        finalSVList[2],
-        finalTallList[0],
-        finalTallList[1],
-        finalTallList[2],
-        finalTallList[3],
-        finalTallList[4],
-        finalTallList[5],
-        finalTallList[6],
-        finalTallList[7],
-        finalTallList[8],
-        finalTallList[9],
-        finalTallList[10],
-        finalTallList[11]
+        SV[0],
+        SV[1],
+        SV[2],
+        values_list[0],
+        values_list[1],
+        values_list[2],
+        values_list[3],
+        values_list[4],
+        values_list[5],
+        values_list[6],
+        values_list[7],
+        values_list[8],
+        values_list[9],
+        values_list[10],
+        values_list[11]
     ]
 
-def Galileiodata(satellitt_id,time, finalTallList, finalSVList):
+def Galileiodata(satellitt_id,time, values_list, SV):
     structured_dataE.loc[len(structured_dataE)] = [
         satellitt_id,
         time,
-        finalSVList[0],
-        finalSVList[1],
-        finalSVList[2],
-        finalTallList[0],
-        finalTallList[1],
-        finalTallList[2],
-        finalTallList[3],
-        finalTallList[4],
-        finalTallList[5],
-        finalTallList[6],
-        finalTallList[7],
-        finalTallList[8],
-        finalTallList[9],
-        finalTallList[10],
-        finalTallList[11],
-        finalTallList[12],
-        finalTallList[13],
-        finalTallList[14],
-        finalTallList[15],
-        finalTallList[16],
-        finalTallList[17],
-        finalTallList[18],
-        finalTallList[19],
-        finalTallList[20],
-        finalTallList[21],
-        finalTallList[22],
-        finalTallList[23]
+        SV[0],
+        SV[1],
+        SV[2],
+        values_list[0],
+        values_list[1],
+        values_list[2],
+        values_list[3],
+        values_list[4],
+        values_list[5],
+        values_list[6],
+        values_list[7],
+        values_list[8],
+        values_list[9],
+        values_list[10],
+        values_list[11],
+        values_list[12],
+        values_list[13],
+        values_list[14],
+        values_list[15],
+        values_list[16],
+        values_list[17],
+        values_list[18],
+        values_list[20],
+        values_list[21],
+        values_list[22],
+        values_list[23],
+        values_list[24]
     ]
 
-def QZSSdata(satellitt_id,time, finalTallList, finalSVList):
+def QZSSdata(satellitt_id,time, values_list, SV):
     
     structured_dataJ.loc[len(structured_dataJ)] = [
         satellitt_id,
         time,
-        finalSVList[0],
-        finalSVList[1],
-        finalSVList[2],
-        finalTallList[0],
-        finalTallList[1],
-        finalTallList[2],
-        finalTallList[3],
-        finalTallList[4],
-        finalTallList[5],
-        finalTallList[6],
-        finalTallList[7],
-        finalTallList[8],
-        finalTallList[9],
-        finalTallList[10],
-        finalTallList[11],
-        finalTallList[12],
-        finalTallList[13],
-        finalTallList[14],
-        finalTallList[15],
-        finalTallList[16],
-        finalTallList[17],
-        finalTallList[18],
-        finalTallList[19],
-        finalTallList[20],
-        finalTallList[21],
-        finalTallList[22],
-        finalTallList[23],
-        finalTallList[24],
-        finalTallList[25]
+        SV[0],
+        SV[1],
+        SV[2],
+        values_list[0],
+        values_list[1],
+        values_list[2],
+        values_list[3],
+        values_list[4],
+        values_list[5],
+        values_list[6],
+        values_list[7],
+        values_list[8],
+        values_list[9],
+        values_list[10],
+        values_list[11],
+        values_list[12],
+        values_list[13],
+        values_list[14],
+        values_list[15],
+        values_list[16],
+        values_list[17],
+        values_list[18],
+        values_list[19],
+        values_list[20],
+        values_list[21],
+        values_list[22],
+        values_list[23],
+        values_list[24],
+        values_list[25]
     ]
 
-def BeiDoudata(satellitt_id,time, finalTallList, finalSVList):
+def BeiDoudata(satellitt_id,time, values_list, SV):
 
     structured_dataC.loc[len(structured_dataC)] = [
         satellitt_id,
         time,
-        finalSVList[0],
-        finalSVList[1],
-        finalSVList[2],
-        finalTallList[0],
-        finalTallList[1],
-        finalTallList[2],
-        finalTallList[3],
-        finalTallList[4],
-        finalTallList[5],
-        finalTallList[6],
-        finalTallList[7],
-        finalTallList[8],
-        finalTallList[9],
-        finalTallList[10],
-        finalTallList[11],
-        finalTallList[12],
-        finalTallList[13],
-        finalTallList[14],
-        finalTallList[15],
-        finalTallList[16],
-        finalTallList[17],
-        finalTallList[18],
-        finalTallList[19],
-        finalTallList[20],
-        finalTallList[21],
-        finalTallList[22],
-        finalTallList[23],
-        finalTallList[24],
-        finalTallList[25]
+        SV[0],
+        SV[1],
+        SV[2],
+        values_list[0],
+        values_list[1],
+        values_list[2],
+        values_list[3],
+        values_list[4],
+        values_list[5],
+        values_list[6],
+        values_list[7],
+        values_list[8],
+        values_list[9],
+        values_list[10],
+        values_list[11],
+        values_list[12],
+        values_list[13],
+        values_list[14],
+        values_list[15],
+        values_list[16],
+        values_list[17],
+        values_list[18],
+        values_list[19],
+        values_list[20],
+        values_list[21],
+        values_list[22],
+        values_list[23],
+        values_list[24],
+        values_list[25]
     ]
 
-def NavICdata(satellitt_id,time, finalTallList, finalSVList):
+def NavICdata(satellitt_id,time, values_list, SV):
     structured_dataI.loc[len(structured_dataI)] = [
         satellitt_id,
         time,
-        finalSVList[0],
-        finalSVList[1],
-        finalSVList[2],
-        finalTallList[0],
-        finalTallList[1],
-        finalTallList[2],
-        finalTallList[3],
-        finalTallList[4],
-        finalTallList[5],
-        finalTallList[6],
-        finalTallList[7],
-        finalTallList[8],
-        finalTallList[9],
-        finalTallList[10],
-        finalTallList[11],
-        finalTallList[12],
-        finalTallList[13],
-        finalTallList[14],
-        finalTallList[15],
-        finalTallList[16],
-        finalTallList[17],
-        finalTallList[18],
-        finalTallList[19],
-        finalTallList[20],
-        finalTallList[21],
-        finalTallList[22],
-        finalTallList[23],
-        finalTallList[24]
+        SV[0],
+        SV[1],
+        SV[2],
+        values_list[0],
+        values_list[1],
+        values_list[2],
+        values_list[3],
+        values_list[4],
+        values_list[5],
+        values_list[6],
+        values_list[7],
+        values_list[8],
+        values_list[9],
+        values_list[10],
+        values_list[11],
+        values_list[12],
+        values_list[13],
+        values_list[14],
+        values_list[15],
+        values_list[16],
+        values_list[17],
+        values_list[18],
+        values_list[19],
+        values_list[20],
+        values_list[21],
+        values_list[22],
+        values_list[23],
+        values_list[24]
     ]
 
-def SBASdata(satellitt_id,time, finalTallList, finalSVList):
+def SBASdata(satellitt_id,time, values_list, SV):
     structured_dataS.loc[len(structured_dataS)] = [
         satellitt_id,
         time,
-        finalSVList[0],
-        finalSVList[1],
-        finalSVList[2],
-        finalTallList[0],
-        finalTallList[1],
-        finalTallList[2],
-        finalTallList[3],
-        finalTallList[4],
-        finalTallList[5],
-        finalTallList[6],
-        finalTallList[7],
-        finalTallList[8],
-        finalTallList[9],
-        finalTallList[10],
-        finalTallList[11]
+        SV[0],
+        SV[1],
+        SV[2],
+        values_list[0],
+        values_list[1],
+        values_list[2],
+        values_list[3],
+        values_list[4],
+        values_list[5],
+        values_list[6],
+        values_list[7],
+        values_list[8],
+        values_list[9],
+        values_list[10],
+        values_list[11]
     ]
 for i in range(0,len(satellitt_data)):
     lines = satellitt_data[i].strip().splitlines()
     satellitt_id = lines[0].split(' ')[0]  # Første linje inneholder satellitt-ID (f.eks. G08)
     if ("R" in satellitt_id) and (len(lines) >4):
-        print("inni")
         Edata = lines[4:]
         lines = lines[:4]
         #data_for_Galileio += [[Edata[i:i + 8]] for i in range(0, len(Edata), 8)]
@@ -288,70 +288,80 @@ for i in range(0,len(satellitt_data)):
             data_for_Galileio.append(Edata[i:i + 8])
  
     forsteLinje = lines[0].split()[1:]
-    tall = " ".join(lines[1:]).split()  # Kombinerer linjene og splittes på mellomrom
+    values_lines = lines[1:]
+
     flattened_forstelinje = flatten(list(map(split_on_second_sign, forsteLinje)))
-    flattened_tall = flatten(list(map(split_on_second_sign, tall)))
+
     cleaned_forstelinje = [item for item in flattened_forstelinje if item != '']
+    values_list = []
+    for line in values_lines:
+        flattenedLine = flatten(list(map(split_on_second_sign, line.split())))
+        cleanedLine = [item for item in flattenedLine if item != '']
+        while len(cleanedLine)<4:
+            cleanedLine.append(np.nan)
+        values_list += cleanedLine
 
     time = datetime(int(cleaned_forstelinje[0]),int(cleaned_forstelinje[1]), int(cleaned_forstelinje[2]), int(cleaned_forstelinje[3]), int(cleaned_forstelinje[4]), int(cleaned_forstelinje[5]))
     
     SV = cleaned_forstelinje[6:]
-    
-    cleaned_tall = [item for item in flattened_tall if item != '']
-    finalTallList = []
-    finalSVList = []
-    for value in SV:
+
+    for i in range(len(SV)):
+        value = SV[i]
         floatNumber = strToFloat(value)
-        finalSVList += [floatNumber]
-    for value in cleaned_tall:
-        floatNumber = strToFloat(value)
-        finalTallList += [floatNumber]
+        SV[i] = floatNumber
+    for j in range(len(values_list)):
+        value = values_list[j]
+        if isinstance(value, str):
+            floatNumber = strToFloat(value)
+            values_list[j] = floatNumber
+        
+  
     #må llegg einn logikk for etter R at man splitter i E
 
     if "G" in satellitt_id:
-        GPSdata(satellitt_id,time,finalTallList, finalSVList)
+        GPSdata(satellitt_id,time,values_list, SV)
     elif "R" in satellitt_id:
-        GLONASSdata(satellitt_id,time,finalTallList, finalSVList)
+        GLONASSdata(satellitt_id,time,values_list, SV)
     elif "J" in satellitt_id:
-        QZSSdata(satellitt_id,time,finalTallList, finalSVList)
+        QZSSdata(satellitt_id,time,values_list, SV)
     elif "C" in satellitt_id:
-        BeiDoudata(satellitt_id,time,finalTallList, finalSVList)
+        BeiDoudata(satellitt_id,time,values_list, SV)
     elif "I" in satellitt_id:
-        NavICdata(satellitt_id,time,finalTallList, finalSVList)
+        NavICdata(satellitt_id,time,values_list, SV)
     elif "S" in satellitt_id:
-        SBASdata(satellitt_id,time,finalTallList, finalSVList)
+        SBASdata(satellitt_id,time,values_list, SV)
 
 
 for i in range(0,len(data_for_Galileio)):
     lines = data_for_Galileio[i]
     satellitt_id = lines[0].split(' ')[0]  
     forsteLinje = lines[0].split()[1:]
-    tall = " ".join(lines[1:]).split()  # Kombinerer linjene og splittes på mellomrom
+    values_lines = lines[1:]
+
     flattened_forstelinje = flatten(list(map(split_on_second_sign, forsteLinje)))
-    
-    flattened_tall = flatten(list(map(split_on_second_sign, tall)))
+
     cleaned_forstelinje = [item for item in flattened_forstelinje if item != '']
+    values_list = []
+    for line in values_lines:
+        flattenedLine = flatten(list(map(split_on_second_sign, line.split())))
+        cleanedLine = [item for item in flattenedLine if item != '']
+        while len(cleanedLine)<4:
+            cleanedLine.append(np.nan)
+        values_list += cleanedLine
 
     time = datetime(int(cleaned_forstelinje[0]),int(cleaned_forstelinje[1]), int(cleaned_forstelinje[2]), int(cleaned_forstelinje[3]), int(cleaned_forstelinje[4]), int(cleaned_forstelinje[5]))
     
     SV = cleaned_forstelinje[6:]
-    
-    cleaned_tall = [item for item in flattened_tall if item != '']
-    finalTallList = []
-    finalSVList = []
-    for value in SV:
-        floatNumber = strToFloat(value)
-        finalSVList += [floatNumber]
-    for value in cleaned_tall:
-        floatNumber = strToFloat(value)
-        finalTallList += [floatNumber]
-    Galileiodata(satellitt_id,time,finalTallList, finalSVList)
 
-print(structured_dataG.head())
-print(structured_dataR.head())
-print(structured_dataE.head())
-print(satellitt_data[len(structured_dataG)+len(structured_dataR)+ len(structured_dataE)])
-print(structured_dataC.head())
-print(structured_dataJ.head())
-print(structured_dataI.head())
-print(structured_dataS.head())
+    for i in range(len(SV)):
+        value = SV[i]
+        floatNumber = strToFloat(value)
+        SV[i] = floatNumber
+    for j in range(len(values_list)):
+        value = values_list[j]
+        if isinstance(value, str):
+            floatNumber = strToFloat(value)
+            values_list[j] = floatNumber
+
+    Galileiodata(satellitt_id,time,values_list, SV)
+
