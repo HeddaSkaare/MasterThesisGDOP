@@ -2,8 +2,26 @@
 
 ### Starte prosjektet
 
-start venv i hovudfilen
-Mac
+<b> Mac </b>
+- Start en terminal
+
 source venv/bin/activate
 
-Windows
+cd backend
+
+python app.py
+
+- Start en ny terminal
+
+source venv/bin/activate
+
+cd frontend
+
+npm start
+
+
+<b> Windows </b>
+- Start en terminal
+
+
+
