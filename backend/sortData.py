@@ -9,7 +9,7 @@ from dataframes import structured_dataG, structured_dataR, structured_dataE, str
 
 
 content = []
-with open("BRDC00IGS_R_20242520000_01D_MN.rnx", "r") as file:
+with open("BRDC00IGS_R_20242620000_01D_MN.rnx", "r") as file:
     content = file.read()
 
 # G: GPS

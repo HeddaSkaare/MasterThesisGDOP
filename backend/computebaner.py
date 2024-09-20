@@ -4,7 +4,7 @@ import numpy as np
 import re
 import ahrs
 from sortData import structured_dataG, structured_dataR, structured_dataE, structured_dataJ, structured_dataC, structured_dataI, structured_dataS
-from satellitePositions import cartesianGPS, cartesianBeiDou,cartesianGalileo,cartesianGLONASS,cartesianNavIC,cartesianQZSS,cartesianSBAS
+from satellitePositions import cartesianA_list, cartesianB_list, cartesianC_list, cartesianGPS, cartesianBeiDou,cartesianGalileo,cartesianGLONASS,cartesianNavIC,cartesianQZSS,cartesianSBAS
 
 T = 558000
 GM = 3.986005*10**14
@@ -207,7 +207,28 @@ def CartesianToGeodetic(X,Y,Z):
     return [phiNew*(180/np.pi),np.arctan(Y/X)*(180/np.pi),h]
 
 def angles(dataframe, recieverPos0):
-    LGDF = pd.DataFrame(columns = ["Satelite number","time", "LGcoords", "Ss", "Sh", "azimuth", "zenith", "elevation"])
+    LGDF = pd.DataFrame(columns = ["Satelitenumber","time", "LGcoords", "Ss", "Sh", "azimuth", "zenith", "elevation"])
+    for index, row in dataframe.iterrows():
+        deltax = row["X"]-recieverPos0[0]
+        deltay = row["Y"]-recieverPos0[1]
+        deltaz = row["Z"]-recieverPos0[2]
+
+        deltaCTRS = np.array([deltax,deltay,deltaz])
+        xyzLG = T @ deltaCTRS.T
+        xyzLG = np.array(xyzLG).flatten() 
+        #calculate angles
+        Ss = (xyzLG[0]**2 + xyzLG[1]**2 + xyzLG[2]**2)**(0.5)
+        Sh = (xyzLG[0]**2 + xyzLG[1]**2 )**(0.5)
+        azimuth = np.arctan2(xyzLG[1],xyzLG[0]) *180/np.pi
+        zenith = np.arccos(xyzLG[2]/Ss)* 180/np.pi
+        elevation = 90- zenith
+        if azimuth < 0:
+            azimuth = 360 + azimuth
+        LGDF.loc[len(LGDF)] = [row["Satelite number"],row["time"],xyzLG, Ss, Sh, azimuth,zenith,elevation]
+    return LGDF
+
+def visualCheck(dataframe, recieverPos0, elevationInput):
+    LGDF = pd.DataFrame(columns = ["Satelitenumber","time", "X","Y","Z", "azimuth", "zenith"])
     for index, row in dataframe.iterrows():
         deltax = row["X"]-recieverPos0[0]
         deltay = row["Y"]-recieverPos0[1]
@@ -220,32 +241,53 @@ def angles(dataframe, recieverPos0):
         #calculate angles
         Ss = (xyzLG[0]**2 + xyzLG[1]**2 + xyzLG[2]**2)**(0.5)
         Sh = (xyzLG[0]**2 + xyzLG[1]**2 )**(0.5)
-        azimuth = np.arctan(xyzLG[1]/xyzLG[0]) *180/np.pi
+        azimuth = np.arctan2(xyzLG[1],xyzLG[0]) *180/np.pi
         zenith = np.arccos(xyzLG[2]/Ss)* 180/np.pi
         elevation = 90- zenith
-        LGDF.loc[len(LGDF)] = [row["Satelite number"],row["time"],xyzLG, Ss, Sh, azimuth,zenith,elevation]
+        if azimuth < 0:
+            azimuth = 360 + azimuth
+        if(elevation >=elevationInput):
+            LGDF.loc[len(LGDF)] = [row["Satelite number"],row["time"],row["X"],row["Y"],row["Z"], azimuth,zenith]
+    
     return LGDF
 
-LGDFgps = angles(cartesianGPS, recieverPos0)
-LGDFBeiDou = angles(cartesianBeiDou, recieverPos0)
-LGDFGalileo = angles(cartesianGalileo, recieverPos0)
-LGDFGLONASS = angles(cartesianGLONASS, recieverPos0)
-LGDFNavIC = angles(cartesianNavIC, recieverPos0)
-LGDFQZSS = angles(cartesianQZSS, recieverPos0)
-LGDFSBAS = angles(cartesianSBAS, recieverPos0)
+def addDataFiltered(structured_data,cartesian_list,start_time,end_time, elevation):
+    structured_data_copy = structured_data.copy()
+    structured_data_copy['Datetime'] = pd.to_datetime(structured_data_copy['Datetime'])
+    
+    filtered_dataG = structured_data_copy[
+        (structured_data_copy['Datetime'] >= start_time) &
+        (structured_data_copy['Datetime'] <= end_time)
+    ]
+    cartesian= cartesian_list(filtered_dataG)
+    return visualCheck(cartesian, recieverPos0,elevation)
 
+gnss_mapping = {
+    'GPS': (structured_dataG, cartesianA_list),
+    'GLONASS': (structured_dataR, cartesianC_list),
+    'Galileo': (structured_dataE, cartesianA_list),
+    'QZSS': (structured_dataJ, cartesianB_list),
+    'BeiDou': (structured_dataS, cartesianC_list),
+    'NavIC': (structured_dataI, cartesianB_list),
+    'SBAS': (structured_dataC, cartesianB_list)
+}
+def runData(gnss_list, elevationstring, start_time_inn,end_time_inn):
+    elevation = float(elevationstring)
+    start_time = pd.to_datetime(start_time_inn).strftime('%Y-%m-%d %H:%M:%S')
+    end_time = pd.to_datetime(end_time_inn).strftime('%Y-%m-%d %H:%M:%S')
+    LGDF_dict = []
+    LGDF_df = []
+    for gnss in gnss_list:
+        data = addDataFiltered(gnss_mapping[gnss][0],gnss_mapping[gnss][1],start_time,end_time, elevation)
+        if not data.empty:
+            LGDF_dict += [data.to_dict()]  
+            LGDF_df += [data]
 
-filtered_data = LGDFQZSS[LGDFQZSS["Satelite number"] == "J02"]
+    return LGDF_dict, LGDF_df
+ 
 
-plt.figure(figsize=(10,10))
-plt.plot(filtered_data["time"], filtered_data["elevation"], label = "QZSS")
-plt.xlabel("Time")
-plt.ylabel("Elevation")
-plt.title("Elevation vs Time for Satellite G01")
-plt.legend()
-plt.show()
-
-
+# newData = runData(["GPS","GLONASS","BeiDou", "QZSS", "SBAS", "Galileio"], "10", "2024-09-08T12:19:52.955Z", "2024-09-08T17:19:52.955Z")
+# print(newData)
 
 
 

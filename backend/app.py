@@ -1,16 +1,48 @@
-from flask import Flask, jsonify
-from computebaner import LGDFgps
-from sortData import satellitt_data
-# from flask_cors import CORS
-# CORS(app)
+
+
+from flask import Flask, jsonify, request
+from computebaner import  runData
+#from computeDOP import best
+import logging
+from flask_cors import CORS
+
+# Set up basic configuration for logging
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
 
-@app.route('/api/get_value', methods=['GET'])
-def get_value():
-    # Her kan du kjøre modellen din og hente verdier
-    model_output = {"value": LGDFgps}
-    return jsonify(model_output)
+@app.route('/satellites', methods=['POST', 'OPTIONS'])
+def satellites():
+    if request.method == 'OPTIONS':
+        # Return 200 for the preflight check
+        return '', 200
+    data = request.json  
+    start_time = data.get('startTime')
+    end_time = data.get('endTime')
+    elevation_angle = data.get('elevationAngle')
+    gnss = data.get('GNSS')
+    is_prosessing = True
+    LGDF_dict, LGDF_df = runData(gnss, elevation_angle, start_time, end_time) 
+    #GDOP, subset = best(LGDF_df)
+    is_prosessing = False
+
+    if not is_prosessing:
+        return jsonify({'message': 'Data processed successfully', 'satellites': LGDF_dict}), 200
+    else:
+        return jsonify({"data": "Data is not ready"}), 202
+
+
+@app.route('/submit-filter', methods=['POST'])
+def submit_time():
+    data = request.json  
+    start_time = data.get('startTime')
+    end_time = data.get('endTime')
+    elevation_angle = data.get('elevationAngle')
+    gnss = data.get('GNSS')
+    stored_data = runData(gnss, elevation_angle, start_time, end_time)  # Long-running function
+    return jsonify({'message': 'Data received successfully'}), 200
+
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="127.0.0.1", port=5000, debug=True)
