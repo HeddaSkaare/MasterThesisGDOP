@@ -6,10 +6,33 @@ import re
 import ahrs
 from datetime import datetime
 from dataframes import structured_dataG, structured_dataR, structured_dataE, structured_dataJ, structured_dataC, structured_dataI, structured_dataS
+import requests
+from requests.auth import HTTPBasicAuth
+import os
 
+# import georinex as gr
+
+# # # Parse the RINEX file (replace 'brdc0010.24n' with your file)
+# rinex_data = gr.load("BRDC00IGS_R_20242520000_01D_MN.rnx")
+
+# # # Print the parsed ephemerides
+# print(rinex_data)
+# base_url = "https://cddis.nasa.gov/archive/gnss/data/daily/2024/brdc/"
+
+# # Earthdata credentials (replace with your own)
+# username = "heddsk"
+# password = "k!@*J$x67NMSyfj"
+
+# The specific file you want to download (e.g., broadcast ephemerides)
+filename = "BRDC00IGS_R_" + "2024" + "2690000" + "_01D_MN.rnx"
+
+# response = requests.get(base_url + filename, auth=HTTPBasicAuth(username, password))
+
+# with open(filename, 'wb') as file:
+#     file.write(response.content)
 
 content = []
-with open("BRDC00IGS_R_20242620000_01D_MN.rnx", "r") as file:
+with open(filename, "r") as file:
     content = file.read()
 
 # G: GPS
@@ -61,7 +84,6 @@ def strToFloat(inputstring):
 
 
 def GPSdata(satellitt_id,time, values_list, SV):
-    
     structured_dataG.loc[len(structured_dataG)]  = [
         satellitt_id,
         time,
@@ -97,7 +119,6 @@ def GPSdata(satellitt_id,time, values_list, SV):
     ]
 
 def GLONASSdata(satellitt_id,time, values_list, SV):
-
     structured_dataR.loc[len(structured_dataR)] = [
         satellitt_id,
         time,
@@ -277,6 +298,7 @@ def SBASdata(satellitt_id,time, values_list, SV):
         values_list[10],
         values_list[11]
     ]
+output_folder = 'output'
 for i in range(0,len(satellitt_data)):
     lines = satellitt_data[i].strip().splitlines()
     satellitt_id = lines[0].split(' ')[0]  # Første linje inneholder satellitt-ID (f.eks. G08)
@@ -302,7 +324,7 @@ for i in range(0,len(satellitt_data)):
         values_list += cleanedLine
 
     time = datetime(int(cleaned_forstelinje[0]),int(cleaned_forstelinje[1]), int(cleaned_forstelinje[2]), int(cleaned_forstelinje[3]), int(cleaned_forstelinje[4]), int(cleaned_forstelinje[5]))
-    
+    output_folder = cleaned_forstelinje[0] +'-'+ cleaned_forstelinje[1] +'-'+ cleaned_forstelinje[2]
     SV = cleaned_forstelinje[6:]
 
     for i in range(len(SV)):
@@ -314,9 +336,6 @@ for i in range(0,len(satellitt_data)):
         if isinstance(value, str):
             floatNumber = strToFloat(value)
             values_list[j] = floatNumber
-        
-  
-    #må llegg einn logikk for etter R at man splitter i E
 
     if "G" in satellitt_id:
         GPSdata(satellitt_id,time,values_list, SV)
@@ -365,3 +384,20 @@ for i in range(0,len(data_for_Galileio)):
 
     Galileiodata(satellitt_id,time,values_list, SV)
 
+
+os.makedirs(output_folder, exist_ok=True)
+file_pathG = os.path.join(output_folder, "structured_dataG.csv")
+structured_dataG.to_csv(file_pathG, index=False)
+file_pathR = os.path.join(output_folder, "structured_dataR.csv")
+structured_dataR.to_csv(file_pathR, index=False)
+file_pathE = os.path.join(output_folder, "structured_dataE.csv")
+structured_dataE.to_csv(file_pathE, index=False)
+file_pathJ = os.path.join(output_folder, "structured_dataJ.csv")
+structured_dataJ.to_csv(file_pathJ, index=False)
+file_pathC = os.path.join(output_folder, "structured_dataC.csv")
+structured_dataC.to_csv(file_pathC, index=False)
+file_pathI = os.path.join(output_folder, "structured_dataI.csv")
+structured_dataI.to_csv(file_pathI, index=False)
+file_pathS = os.path.join(output_folder, "structured_dataS.csv")
+structured_dataS.to_csv(file_pathS, index=False)
+print("Done")

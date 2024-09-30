@@ -1,13 +1,29 @@
 
 import itertools
 import numpy as np
-from computebaner import recieverPos0, runData
-from satellitePositions import cartesianGPS
+import pandas as pd
+import ahrs
+from computebaner import runData
+# from satellitePositions import cartesianGPS
 
 T = 558000
 GM = 3.986005*10**14
 we = 7.2921151467 *10**(-5) 
 c = 299792458
+wgs = ahrs.utils.WGS()
+#romsdalen
+phi = 62.42953 * np.pi/180
+lam = 7.94942* np.pi/180
+h = 117.5
+def Cartesian(phi,lam, h):
+    N = (wgs.a**2)/np.sqrt(wgs.a**2*(np.cos(phi))**2 + wgs.b**2*(np.sin(phi))**2)
+    X = (N+h)*np.cos(phi)*np.cos(lam)
+    Y = (N+h)*np.cos(phi)*np.sin(lam)
+    Z = (((wgs.b**2)/(wgs.a**2))*N + h)*np.sin(phi)
+    return [X,Y,Z]
+
+#point 1 coordinates
+recieverPos0 = Cartesian(phi,lam, h)
 def geometric_range(sat_pos, rec_pos):
     return np.sqrt((sat_pos[0] - rec_pos[0])**2 +
                    (sat_pos[1] - rec_pos[1])**2 +
@@ -15,13 +31,12 @@ def geometric_range(sat_pos, rec_pos):
 
 
 def DOPvalues(satellites, recieverPos0):
-    A = np.zeros((7, 4))  
+    size = len(satellites)
+    A = np.zeros((size, 4))  
     Qxx =np.zeros((4, 4)) 
     #creates the A matrix
     i = 0
     for satellite in satellites:
-        print(satellite)
-        print([satellite[2], satellite[3], satellite[4]])
         rho_i = geometric_range([satellite[2], satellite[3], satellite[4]], recieverPos0)
         A[i][0] = -(satellite[2]-recieverPos0[0]) / rho_i
         A[i][1] = -(satellite[3] - recieverPos0[1]) / rho_i
@@ -39,25 +54,17 @@ def DOPvalues(satellites, recieverPos0):
     return GDOP,PDOP,TDOP
 
 def best(satellites):
+
     satellites_array = []
-    # for satellite in satellites:
-    #     for i in range(0,len(satellite)-1):
-    #         satellites_array += [satellite.loc[i]["Satelitenumber"], satellite.loc[i]["time"], satellite.loc[i]["X"], satellite.loc[i]["Y"], satellite.loc[i]["Z"]]
-    for row in satellites.iterrows():
-        satellites_array += [[row["Satelitenumber"],row["time"], row["X"],row["Y"], row["Z"]]]
-    best_GDOP = float('inf') 
-    best_subset = None
-
-    for subset in itertools.combinations(satellites_array, 7):
-        GDOP, PDOP, TDOP = DOPvalues(subset, recieverPos0)
-        
-        # Find the subset with the lowest GDOP
-        if GDOP < best_GDOP:
-            best_GDOP = GDOP
-            best_subset = subset
+    for satellitedf in satellites:
+        for index,row in satellitedf.iterrows():
+            satellites_array += [[row["Satelitenumber"],row["time"], row["X"],row["Y"], row["Z"]]]
+    if(len(satellites_array) > 0):
+        GDOP, PDOP, TDOP = DOPvalues(satellites_array, recieverPos0)
+    else:
+        GDOP = 0
+        PDOP = 0
+        TDOP = 0
     
-    return best_GDOP, best_subset
+    return GDOP, PDOP, TDOP
 
-# newData, newDatadf = runData(["GPS","GLONASS","BeiDou", "QZSS", "SBAS", "Galileio"], "10", "2024-09-08T12:19:52.955Z", "2024-09-08T17:19:52.955Z")
-GDOP, subset = best(cartesianGPS)
-print(GDOP, subset)

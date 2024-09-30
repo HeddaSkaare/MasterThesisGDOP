@@ -6,12 +6,12 @@ import {elevationState, updateDataState,timeState, gnssState} from '../states/st
 
 
 // Satellite component rendering a satellite sphere with label
-const Satellite = ({ name, position }) => (
+const Satellite = ({ name, position, time }) => (
   <mesh position={position}>
     <sphereGeometry args={[0.1, 32, 32]} />
     <meshStandardMaterial color="red" />
     <Html distanceFactor={10}>
-      <div style={{ color: 'white', background: 'black', padding: '2px' }}>{name}</div>
+      <div style={{ color: 'white', background: 'black', padding: '2px' }}>{name} time:{time} </div>
     </Html>
   </mesh>
 );
@@ -57,14 +57,44 @@ const Visualization = ({ }) => {
     const gnssNames = useAtomValue(gnssState);
     const elevationAngle = useAtomValue(elevationState);
     const time =useAtomValue(timeState);
-    // const [GDOP, setGDOP] = useState(0);
+    const [initialLoad,setInitialLoad] = useState(true);
+    const [GDOP, setGDOP] = useState(0);
+    const [PDOP, setPDOP] = useState(0);
+    const [TDOP, setTDOP] = useState(0);
     // const [subset, setSubset] = useState([]);
-    
+    useEffect(() => {
+      setLoading(true);
+      if(initialLoad){
+        fetch('http://127.0.0.1:5000/initialize', {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          method: "GET",
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json(); 
+        })
+        .then(data => {
+          console.log("initial",data)
+          setSatellites(data.data);
+          setInitialLoad(false); 
+          setLoading(false);  
+        })
+        .catch(error => {
+          console.error('There was a problem with the fetch operation:', error);
+          setLoading(false);
+        });
+      }
+    },[initialLoad]);
     useEffect(() => {
       setLoading(true);
     
       const filteredGNSS = Object.keys(gnssNames).filter((key) => gnssNames[key]);
-      const endTime = new Date(time.getTime() + (2 * 60 * 60 * 1000));//sets the end time to 2 hours after the start time
+      //const endTime = new Date(time.getTime() - (1 * 60 * 60 * 1000));//sets the end time to 2 hours after the start time
     
       fetch('http://127.0.0.1:5000/satellites', {
         headers: {
@@ -73,8 +103,7 @@ const Visualization = ({ }) => {
         },
         method: "POST",
         body: JSON.stringify({
-          startTime: time.toISOString(),
-          endTime: endTime.toISOString(),
+          time: time.toISOString(),
           elevationAngle: elevationAngle.toString(),
           GNSS: filteredGNSS,
         })
@@ -86,8 +115,11 @@ const Visualization = ({ }) => {
         return response.json(); 
       })
       .then(data => {
-        console.log(data)
+        console.log("updated",data)
         setSatellites(data.satellites);
+        setGDOP(data.GDOP);
+        setPDOP(data.PDOP);
+        setTDOP(data.TDOP);
         setUpdateData(false);  
         setLoading(false);  
       })
@@ -115,26 +147,40 @@ const Visualization = ({ }) => {
         {satellites.map((satellite, idx) => {
           // Convert dictionary-like structure to arrays using Object.keys
           const satNumbers = Object.keys(satellite.Satelitenumber);
-          console.log(satNumbers);
           return satNumbers.map((key) => {
             //console.log(satellite.Satelitenumber[key])
             const satName = satellite.Satelitenumber[key];
+            const time = satellite.time[key];
             const azimuth = satellite.azimuth[key];
             const zenith = satellite.zenith[key];
 
             // Assuming sphericalToCartesian is a function to convert azimuth and elevation
             const coordinates = sphericalToCartesian(6, azimuth, zenith, [0, 0, -Math.PI]);
 
-            return <Satellite key={`${idx}-${key}`} name={satName} position={coordinates} />;
+            return <Satellite key={`${idx}-${key}`} name={satName} position={coordinates} time={time.slice(11,17)} />;
           });
         })}
         <OrbitControls />
       </Canvas>
     </div>
-    {/* <div>
+    <div>
+        {satellites.map((satellite, idx) => {
+          // Convert dictionary-like structure to arrays using Object.keys
+          const satNumbers = Object.keys(satellite.Satelitenumber);
+          return satNumbers.map((key) => {
+            const satName = satellite.Satelitenumber[key];
+            const time = satellite.time[key];
+            const azimuth = satellite.azimuth[key];
+            const elevation = 90 -satellite.zenith[key];
+            return <p >name: {satName},time: {time},azimuth: {azimuth} , elevation: {elevation} </p>;
+          });
+        })}
+    </div>
+    <div>
       <p>GDOP: {GDOP}</p>
-      <p>Subset: {subset}</p>
-    </div> */}
+      <p>PDOP: {PDOP}</p>
+      <p>TDOP: {TDOP}</p>
+    </div>
       </>
   );
 };
