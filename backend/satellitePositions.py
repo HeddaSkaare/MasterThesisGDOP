@@ -54,7 +54,7 @@ def R3(theta):
     return np.array([[np.cos(theta),np.sin(theta),0],[-np.sin(theta),np.cos(theta),0],[0,0,1]])
 
 def cartesianB_list(data, time):
-    diff = 720100
+    diff = 720100000000
     theIndex = 0
     i = 0
     #find the Datetime that is closes to time, but the datetime has to beback in time compared to time
@@ -80,7 +80,7 @@ def cartesianB_list(data, time):
     return [satelite_id,time.strftime("%Y-%m-%dT%H:%M:%S.%f"), coordinates[0], coordinates[1],coordinates[2]]
 
 def cartesianC_list(data, time):
-    diff = 180000
+    diff = 18000000000000
     endRow = []
     for index, row in data.iterrows():
         if (row["Datetime"] < time) and ((time-row["Datetime"]).total_seconds() < diff):
@@ -93,7 +93,7 @@ def cartesianC_list(data, time):
 
 #kommer annenhver time 7200 sek
 def cartesianA_list(data, time):
-    diff = 720100
+    diff = 7201000000
     theIndex = 0
     i = 0
     #find the Datetime that is closes to time, but the datetime has to beback in time compared to time

@@ -2,51 +2,22 @@ import { Canvas } from '@react-three/fiber';
 import { Html, OrbitControls } from '@react-three/drei';
 import React, { useEffect, useState } from 'react';
 import { useAtom, useAtomValue } from 'jotai'
-import {elevationState, updateDataState,timeState, gnssState} from '../states/states';
+import {elevationState, updateDataState,timeState, gnssState, epochState} from '../states/states';
+import { SatelliteMap } from './SkyPlot';
+import '../css/visualization.css';
+import { BarChartGraph } from './BoxPlot';
+import { LineGraph } from './LinePlot';
 
+const gps = {
+  G: 'GPS',
+  R: 'GLONASS',
+  E: 'Galileo',
+  C: 'BeiDou',
+  J: 'QZSS',
+  I: 'IRNSS',
+  S: 'SBAS',
+};
 
-// Satellite component rendering a satellite sphere with label
-const Satellite = ({ name, position, time }) => (
-  <mesh position={position}>
-    <sphereGeometry args={[0.1, 32, 32]} />
-    <meshStandardMaterial color="red" />
-    <Html distanceFactor={10}>
-      <div style={{ color: 'white', background: 'black', padding: '2px' }}>{name} time:{time} </div>
-    </Html>
-  </mesh>
-);
-
-function sphericalToCartesian(r, azimuth, zenith, center) {
-    azimuth = azimuth * Math.PI / 180;
-    zenith = zenith * Math.PI / 180;
-    const x = r * Math.sin(zenith) * Math.cos(azimuth) + center[0];
-    const y = r * Math.sin(zenith) * Math.sin(azimuth) + center[1];
-    const z = r * Math.cos(zenith) + center[2];
-
-    const theta = -Math.PI / 2;  // Rotation angle (-π/2 radians)
-    const yRotated = y * Math.cos(theta) - z * Math.sin(theta);
-    const zRotated = y * Math.sin(theta) + z * Math.cos(theta);
-    return [x, yRotated, zRotated];
-}
-
-
-// HalfSphere component to render the half sphere in 3D space
-const HalfSphere = () => (
-    <>
-    
-        <mesh position={[0, -3.33, 0]} rotation={[-Math.PI/2, 0, 0]}> 
-            <sphereGeometry args={[6, 32, 32, 0, Math.PI]} />
-            <meshStandardMaterial color="blue" wireframe />
-        </mesh>
-        <mesh position={[0, -Math.PI-0.4,0 ]}>
-            <sphereGeometry args={[0.2, 32, 32]} />
-            <meshStandardMaterial color="black" />
-            <Html distanceFactor={10}>
-            <div style={{ color: 'white', background: 'black', padding: '2px' }}>Your position</div>
-            </Html>
-        </mesh>
-</>
-);
 
 // Main visualization component
 const Visualization = ({ }) => {
@@ -57,39 +28,41 @@ const Visualization = ({ }) => {
     const gnssNames = useAtomValue(gnssState);
     const elevationAngle = useAtomValue(elevationState);
     const time =useAtomValue(timeState);
-    const [initialLoad,setInitialLoad] = useState(true);
-    const [GDOP, setGDOP] = useState(0);
-    const [PDOP, setPDOP] = useState(0);
-    const [TDOP, setTDOP] = useState(0);
+    const epoch = useAtomValue(epochState);
+    const labels = [];
+
+    //const [initialLoad,setInitialLoad] = useState(true);
+    const [DOP, setDOP] = useState([[0,0,0]]);
+
     // const [subset, setSubset] = useState([]);
-    useEffect(() => {
-      setLoading(true);
-      if(initialLoad){
-        fetch('http://127.0.0.1:5000/initialize', {
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-          method: "GET",
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json(); 
-        })
-        .then(data => {
-          console.log("initial",data)
-          setSatellites(data.data);
-          setInitialLoad(false); 
-          setLoading(false);  
-        })
-        .catch(error => {
-          console.error('There was a problem with the fetch operation:', error);
-          setLoading(false);
-        });
-      }
-    },[initialLoad]);
+    // useEffect(() => {
+    //   setLoading(true);
+    //   if(initialLoad){
+    //     fetch('http://127.0.0.1:5000/initialize', {
+    //       headers: {
+    //         'Accept': 'application/json',
+    //         'Content-Type': 'application/json'
+    //       },
+    //       method: "GET",
+    //     })
+    //     .then(response => {
+    //       if (!response.ok) {
+    //         throw new Error('Network response was not ok');
+    //       }
+    //       return response.json(); 
+    //     })
+    //     .then(data => {
+    //       console.log("initial",data)
+    //       setSatellites(data.data);
+    //       setInitialLoad(false); 
+    //       setLoading(false);  
+    //     })
+    //     .catch(error => {
+    //       console.error('There was a problem with the fetch operation:', error);
+    //       setLoading(false);
+    //     });
+    //   }
+    // },[initialLoad]);
     useEffect(() => {
       setLoading(true);
     
@@ -105,6 +78,7 @@ const Visualization = ({ }) => {
         body: JSON.stringify({
           time: time.toISOString(),
           elevationAngle: elevationAngle.toString(),
+          epoch: epoch.toString(),
           GNSS: filteredGNSS,
         })
       })
@@ -117,9 +91,7 @@ const Visualization = ({ }) => {
       .then(data => {
         console.log("updated",data)
         setSatellites(data.satellites);
-        setGDOP(data.GDOP);
-        setPDOP(data.PDOP);
-        setTDOP(data.TDOP);
+        setDOP(data.DOP);
         setUpdateData(false);  
         setLoading(false);  
       })
@@ -127,6 +99,11 @@ const Visualization = ({ }) => {
         console.error('There was a problem with the fetch operation:', error);
         setLoading(false);
       });
+
+      for (let i = 0; i < 2*4; i++) {
+        const currentTime = new Date(time.getTime() + i* 30 * 60 * 1000); 
+        labels.push(currentTime.toISOString().slice(11, 16)); 
+      }
     }, [updateData]);
     
   if (loading) {
@@ -138,50 +115,33 @@ const Visualization = ({ }) => {
   }
 
   return (
-    <><div style={{ width: '1500px', height: '500px' }}>
-      <Canvas camera={{ position: [0, 0, 10], fov: 75 }}>
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} />
-        <HalfSphere />
-        {/* Iterate over the satellites */}
-        {satellites.map((satellite, idx) => {
-          // Convert dictionary-like structure to arrays using Object.keys
-          const satNumbers = Object.keys(satellite.Satelitenumber);
-          return satNumbers.map((key) => {
-            //console.log(satellite.Satelitenumber[key])
-            const satName = satellite.Satelitenumber[key];
-            const time = satellite.time[key];
-            const azimuth = satellite.azimuth[key];
-            const zenith = satellite.zenith[key];
-
-            // Assuming sphericalToCartesian is a function to convert azimuth and elevation
-            const coordinates = sphericalToCartesian(6, azimuth, zenith, [0, 0, -Math.PI]);
-
-            return <Satellite key={`${idx}-${key}`} name={satName} position={coordinates} time={time.slice(11,17)} />;
-          });
-        })}
-        <OrbitControls />
+    <>
+    <div style={{ width: '1200px', height: '700px' }}>
+      <Canvas camera={{ position: [0, 0, 10], fov: 45 }}>
+        <SatelliteMap satellites={satellites} />
       </Canvas>
     </div>
-    <div>
-        {satellites.map((satellite, idx) => {
-          // Convert dictionary-like structure to arrays using Object.keys
-          const satNumbers = Object.keys(satellite.Satelitenumber);
-          return satNumbers.map((key) => {
-            const satName = satellite.Satelitenumber[key];
-            const time = satellite.time[key];
-            const azimuth = satellite.azimuth[key];
-            const elevation = 90 -satellite.zenith[key];
-            return <p >name: {satName},time: {time},azimuth: {azimuth} , elevation: {elevation} </p>;
-          });
-        })}
+    <div className="satellite-table">
+      {satellites.map((satellite, index) => {
+        const satNumbers = Object.keys(satellite.Satelitenumber);
+        const label = satellite.Satelitenumber[0][0];
+        return (
+          <div key={index} className="satellite-column">
+            <div className="satellite-name">{gps[label]}</div>
+            {satNumbers.map((key) => {
+              const satName = satellite.Satelitenumber[key];
+              return (
+                <div key={key} className="satellite-number">
+                  <p>{satName}</p>
+                </div>)
+            })}
+          </div>
+        )
+      })}
     </div>
-    <div>
-      <p>GDOP: {GDOP}</p>
-      <p>PDOP: {PDOP}</p>
-      <p>TDOP: {TDOP}</p>
-    </div>
-      </>
+    <BarChartGraph data={satellites} labels={labels}/>
+    <LineGraph data={satellites} labels={labels}/>
+    </>
   );
 };
 

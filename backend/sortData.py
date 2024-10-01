@@ -24,7 +24,8 @@ import os
 # password = "k!@*J$x67NMSyfj"
 
 # The specific file you want to download (e.g., broadcast ephemerides)
-filename = "BRDC00IGS_R_" + "2024" + "2690000" + "_01D_MN.rnx"
+daynumber = "269"
+filename = "BRDC00IGS_R_" + "2024" + daynumber+ "0000" + "_01D_MN.rnx"
 
 # response = requests.get(base_url + filename, auth=HTTPBasicAuth(username, password))
 
@@ -298,7 +299,8 @@ def SBASdata(satellitt_id,time, values_list, SV):
         values_list[10],
         values_list[11]
     ]
-output_folder = 'output'
+
+
 for i in range(0,len(satellitt_data)):
     lines = satellitt_data[i].strip().splitlines()
     satellitt_id = lines[0].split(' ')[0]  # Første linje inneholder satellitt-ID (f.eks. G08)
@@ -386,18 +388,18 @@ for i in range(0,len(data_for_Galileio)):
 
 
 os.makedirs(output_folder, exist_ok=True)
-file_pathG = os.path.join(output_folder, "structured_dataG.csv")
+file_pathG = os.path.join("DataFrames",daynumber, "structured_dataG.csv")
 structured_dataG.to_csv(file_pathG, index=False)
-file_pathR = os.path.join(output_folder, "structured_dataR.csv")
+file_pathR = os.path.join("DataFrames",daynumber, "structured_dataR.csv")
 structured_dataR.to_csv(file_pathR, index=False)
-file_pathE = os.path.join(output_folder, "structured_dataE.csv")
+file_pathE = os.path.join( "DataFrames",daynumber, "structured_dataE.csv")
 structured_dataE.to_csv(file_pathE, index=False)
-file_pathJ = os.path.join(output_folder, "structured_dataJ.csv")
+file_pathJ = os.path.join("DataFrames", daynumber, "structured_dataJ.csv")
 structured_dataJ.to_csv(file_pathJ, index=False)
-file_pathC = os.path.join(output_folder, "structured_dataC.csv")
+file_pathC = os.path.join("DataFrames", daynumber, "structured_dataC.csv")
 structured_dataC.to_csv(file_pathC, index=False)
-file_pathI = os.path.join(output_folder, "structured_dataI.csv")
+file_pathI = os.path.join( "DataFrames",daynumber, "structured_dataI.csv")
 structured_dataI.to_csv(file_pathI, index=False)
-file_pathS = os.path.join(output_folder, "structured_dataS.csv")
+file_pathS = os.path.join("DataFrames",daynumber, "structured_dataS.csv")
 structured_dataS.to_csv(file_pathS, index=False)
 print("Done")

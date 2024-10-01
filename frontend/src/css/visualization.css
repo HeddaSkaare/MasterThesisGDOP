@@ -1,0 +1,32 @@
+.satellite-table {
+    width:30%;
+    height:30%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); /* Distribute rows evenly */
+    gap: 10px; /* Space between each row */
+    padding: 10px;
+    margin: 50px;
+  }
+  
+  .satellite-column {
+    display: grid;
+    grid-template-rows: repeat(auto-fit, minmax(70px, 1fr)); /* Distribute columns evenly */
+    align-items: center;
+    gap: 10px; /* Space between each cell in a row */
+    border-bottom: 1px solid #ccc; /* Optional: Add a line to separate rows */
+    padding: 10px 0;
+  }
+  
+  .satellite-name {
+    text-align: center;
+    font-weight: bold; /* Style the satellite name */
+    color: #333;
+  }
+  
+  .satellite-number {
+    background: #f7f7f7; /* Optional: Light background color for the numbers */
+    padding: 5px 10px;
+    border-radius: 4px;
+    text-align: center;
+  }
+  

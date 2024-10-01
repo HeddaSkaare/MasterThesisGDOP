@@ -22,15 +22,15 @@ def satellites():
     time = data.get('time').strip('Z')
     elevation_angle = data.get('elevationAngle')
     gnss = data.get('GNSS')
-    print(gnss, elevation_angle, time)
+    epoch = data.get('epoch')
+    
     is_prosessing = True
-    LGDF_dict, LGDF_df = runData(gnss, elevation_angle, time) 
-    print(LGDF_df)
-    GDOP, PDOP,TDOP = best(LGDF_df)
+    list, df = runData(gnss, elevation_angle, time, epoch) 
+    DOPvalues = best(df)
     is_prosessing = False
 
     if not is_prosessing:
-        return jsonify({'message': 'Data processed successfully', 'satellites': LGDF_dict, 'GDOP':GDOP, 'PDOP':PDOP, 'TDOP':TDOP}), 200
+        return jsonify({'message': 'Data processed successfully', 'satellites': list, 'DOP':DOPvalues}), 200
     else:
         return jsonify({"data": "Data is not ready"}), 202
 

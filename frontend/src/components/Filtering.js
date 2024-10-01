@@ -1,12 +1,12 @@
 import React,{useState} from 'react';
 import { useSetAtom, useAtom } from 'jotai';
-import {elevationState, updateDataState,timeState, gnssState} from '../states/states';
+import {elevationState, updateDataState,timeState, gnssState, epochState} from '../states/states';
 
 const FilterComponent = () => {
   const [gnssNames, setGnssNames] = useAtom(gnssState);
   const [elevationAngle, setElevationAngle] = useAtom(elevationState)
   const [time, setTime] =useAtom(timeState);
-  const [hours, setHours] = useState(time.getHours()-2);
+  const [hours, setHours] = useAtom(epochState);
   const setUpdateData = useSetAtom(updateDataState)
 
   const handleCheckboxChange = (e) => {
@@ -17,13 +17,9 @@ const FilterComponent = () => {
   };
 
   const handleDateChange = (event) => {
-    const selectedDate = event.target.value; // This is the selected date in 'YYYY-MM-DD' format
-    const newDate = new Date(selectedDate); // Create a new Date object from the selected date
-
-    // Update only the date part, while keeping the original time (hours, minutes, seconds)
-    newDate.setHours(time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
-
-    setTime(newDate); // Update the state with the new date and original time
+    const localTime = event.target.value; // Get the selected local time string
+    const utcTime = new Date(localTime + ":00.000Z"); // Append UTC format and create Date object
+    setTime(utcTime); // Update state with UTC date
   };
 
   const handleElevationAngleChange = (e) => {
@@ -34,14 +30,7 @@ const FilterComponent = () => {
     setUpdateData(true);
   }
   const handleHourChange = (event) => {
-    const newHours = parseInt(event.target.value, 10); // Get the new hours value from the slider
-    const updatedTime = new Date(time); // Clone the current time
-
-    // Update the hours while keeping the date and minutes/seconds/milliseconds intact
-    updatedTime.setHours(newHours);
-
-    setHours(newHours-2); // Update the hours state
-    setTime(updatedTime); // Update the full Date object
+    setHours(event.target.value);
   };
 
 
@@ -62,11 +51,12 @@ const FilterComponent = () => {
           </label>
         ))}
       </div>
+
       <div>
-        <h4>Time of day</h4>
+        <h4>Time of Day (UTC)</h4>
         <input
-          type="date"
-          value={time.toISOString().slice(0, 10)}
+          type="datetime-local"
+          value={time.toISOString().slice(0, 16)} // Format to yyyy-MM-ddTHH:mm in UTC
           onChange={handleDateChange}
         />
       </div>
@@ -74,11 +64,11 @@ const FilterComponent = () => {
         <p>Selected Start Time: {time.toUTCString()}</p>
       </div>
       <div>
-        <h4>Hours</h4>
+        <h4>Time Epoch</h4>
         <input
           type="range"
           min="0"
-          max="23"
+          max="24"
           value={hours}
           onChange={handleHourChange}
         />

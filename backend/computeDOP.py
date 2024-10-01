@@ -54,17 +54,17 @@ def DOPvalues(satellites, recieverPos0):
     return GDOP,PDOP,TDOP
 
 def best(satellites):
-
-    satellites_array = []
-    for satellitedf in satellites:
-        for index,row in satellitedf.iterrows():
-            satellites_array += [[row["Satelitenumber"],row["time"], row["X"],row["Y"], row["Z"]]]
-    if(len(satellites_array) > 0):
-        GDOP, PDOP, TDOP = DOPvalues(satellites_array, recieverPos0)
-    else:
-        GDOP = 0
-        PDOP = 0
-        TDOP = 0
+    final_DOP_values = []
+    for satelitedf in satellites:
+        satellites_array = []
+        for satellitedf in satelitedf:
+            for index,row in satellitedf.iterrows():
+                satellites_array += [[row["Satelitenumber"],row["time"], row["X"],row["Y"], row["Z"]]]
+        if(len(satellites_array) > 0):
+            GDOP, PDOP, TDOP = DOPvalues(satellites_array, recieverPos0)
+            final_DOP_values.append([GDOP, PDOP, TDOP])
+        else:
+            final_DOP_values.append([0, 0, 0])
     
-    return GDOP, PDOP, TDOP
+    return final_DOP_values
 

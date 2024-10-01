@@ -17,19 +17,21 @@ wgs = ahrs.utils.WGS()
 phi = 62.42953 * np.pi/180
 lam = 7.94942* np.pi/180
 h = 117.5
+
 #default nullpoint
 # phi = 63.10894307441669 * np.pi/180
 # lam = 10.405541695331934 * np.pi/180
 # h = 115.032
-dataGPS = pd.read_csv("rawdfGPS.csv")
-dataGLONASS = pd.read_csv("rawdfGLONASS.csv")
-dataBeiDou = pd.read_csv("rawdfBeiDou.csv")
-dataGalileo = pd.read_csv("rawdfGalileo.csv")
-dataQZSS = pd.read_csv("rawdfQZSS.csv")
-dataNavIC = pd.read_csv("rawdfIRNSS.csv")
-dataSBAS = pd.read_csv("rawdfSBAS.csv")
 
-print(dataGPS.head(5))
+dataGPS = pd.read_csv("DataFrames/269/rawdfGPS.csv")
+dataGLONASS = pd.read_csv("DataFrames/269/rawdfGLONASS.csv")
+dataBeiDou = pd.read_csv("DataFrames/269/rawdfBeiDou.csv")
+dataGalileo = pd.read_csv("DataFrames/269/rawdfGalileo.csv")
+dataQZSS = pd.read_csv("DataFrames/269/rawdfQZSS.csv")
+dataNavIC = pd.read_csv("DataFrames/269/rawdfIRNSS.csv")
+dataSBAS = pd.read_csv("DataFrames/269/rawdfSBAS.csv")
+
+
 gnss_mapping = {
     'GPS': dataGPS,
     'GLONASS': dataGLONASS,
@@ -49,13 +51,6 @@ def Cartesian(phi,lam, h):
 #point 1 coordinates
 recieverPos0 = Cartesian(phi,lam, h)
 
-
-#example data
-# lam = 10.58311814 * np.pi/180
-# phi  = 63.40919533 *np.pi/180
-# deltax = 1084.518
-# deltay = -9212.999
-# deltaz = -87.373
 #calculate LG
 T = np.matrix([[-np.sin(phi)*np.cos(lam),-np.sin(phi)*np.sin(lam) , np.cos(phi)], 
             [-np.sin(lam), np.cos(lam), 0],
@@ -101,25 +96,28 @@ def visualCheck(dataframe, recieverPos0, elevationInput):
         if azimuth < 0:
             azimuth = 360 + azimuth
         if(elevation >=elevationInput):
-            print("row: ",row)
             LGDF.loc[len(LGDF)] = [row["satelite_id"],row["time"],row["X"],row["Y"],row["Z"], azimuth,zenith]
     
     return LGDF
 
-def runData(gnss_list, elevationstring, t):
+def runData(gnss_list, elevationstring, t, epoch):
     elevation = float(elevationstring)
-    time = pd.to_datetime(t)
-    LGDF_dict = []
-    LGDF_df = []
-    for gnss in gnss_list:
-        positions = get_satellite_positions(gnss_mapping[gnss],gnss,time)
-        print(positions)
-        data = visualCheck(positions, recieverPos0, elevation)
-        if not data.empty:
-            LGDF_dict += [data.to_dict()]  
-            LGDF_df += [data]
-
-    return LGDF_dict, LGDF_df
+    #create a list that contains the seconds for every halfhour in the epoch when epoch is hours
+    final_list = []
+    final_listdf = []
+    for i in range(0, int(epoch)*2):
+        time = pd.to_datetime(t)+ pd.Timedelta(minutes=i*30)
+        LGDF_dict = []
+        LGDF_df = []
+        for gnss in gnss_list:
+            positions = get_satellite_positions(gnss_mapping[gnss],gnss,time)
+            data = visualCheck(positions, recieverPos0, elevation)
+            if not data.empty:
+                LGDF_dict += [data.to_dict()]  
+                LGDF_df += [data]
+        final_list.append(LGDF_dict)
+        final_listdf.append(LGDF_df)
+    return final_list, final_listdf
  
 
 
