@@ -5,7 +5,6 @@ const NavBar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-logo">GNSS Navigator</div>
-      <button className="navbar-profile">Profile</button>
     </nav>
   );
 };

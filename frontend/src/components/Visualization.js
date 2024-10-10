@@ -1,70 +1,89 @@
-import { Canvas } from '@react-three/fiber';
+
 import { Html, OrbitControls } from '@react-three/drei';
 import React, { useEffect, useState } from 'react';
 import { useAtom, useAtomValue } from 'jotai'
-import {elevationState, updateDataState,timeState, gnssState} from '../states/states';
+import {elevationState, updateDataState,timeState, gnssState, epochState} from '../states/states';
+import { SatelliteMap } from './SkyPlot';
+import '../css/visualization.css';
+import { BarChartGraph } from './BoxPlot';
+import { LineChart } from './LinePlot';
 
 
-// Satellite component rendering a satellite sphere with label
-const Satellite = ({ name, position }) => (
-  <mesh position={position}>
-    <sphereGeometry args={[0.1, 32, 32]} />
-    <meshStandardMaterial color="red" />
-    <Html distanceFactor={10}>
-      <div style={{ color: 'white', background: 'black', padding: '2px' }}>{name}</div>
-    </Html>
-  </mesh>
-);
+const gps = {
+  G: 'GPS',
+  R: 'GLONASS',
+  E: 'Galileo',
+  C: 'BeiDou',
+  J: 'QZSS',
+  I: 'IRNSS',
+  S: 'SBAS',
+};
+const colors = {
+  G: '#1E90FF',  // Dodger Blue
+  R: '#32CD32',  // Lime Green
+  E: '#FF6347',  // Tomato Red
+  C: '#FFD700',  // Gold
+  J: '#6A5ACD',  // Slate Blue
+  I: '#FF8C00',  // Dark Orange
+  S: '#FF1493',  // Deep Pink
+};
 
-function sphericalToCartesian(r, azimuth, zenith, center) {
-    azimuth = azimuth * Math.PI / 180;
-    zenith = zenith * Math.PI / 180;
-    const x = r * Math.sin(zenith) * Math.cos(azimuth) + center[0];
-    const y = r * Math.sin(zenith) * Math.sin(azimuth) + center[1];
-    const z = r * Math.cos(zenith) + center[2];
 
-    const theta = -Math.PI / 2;  // Rotation angle (-π/2 radians)
-    const yRotated = y * Math.cos(theta) - z * Math.sin(theta);
-    const zRotated = y * Math.sin(theta) + z * Math.cos(theta);
-    return [x, yRotated, zRotated];
+function fixData(data) {
+  return data.map((satellites) => {
+    const finalArray = [];
+    satellites.forEach((satellite, index) => {
+      const satNumbers = Object.keys(satellite.Satelitenumber);
+      const label = satellite.Satelitenumber[satNumbers[0]];
+      const typeLabel = gps[label[0]]
+      const color = colors[label[0]];
+      const satellitesData = [];
+      
+      satNumbers.forEach((key) => {
+        const satName = satellite.Satelitenumber[key];
+        const satCoord = [satellite.X[key], satellite.Y[key], satellite.Z[key]];
+        const time = satellite.time[key];
+        const azimuth = satellite.azimuth[key];
+        const zenith = satellite.zenith[key];
+        satellitesData.push({
+          'satName': satName,
+          'satCoord': satCoord,
+          'time': time,
+          'azimuth': azimuth,
+          'zenith': zenith
+        });
+      });
+
+      finalArray.push({
+        'type': typeLabel,
+        'color': color,
+        'satellitesData': satellitesData
+      });
+    });
+
+    return finalArray;
+  });
 }
-
-
-// HalfSphere component to render the half sphere in 3D space
-const HalfSphere = () => (
-    <>
-    
-        <mesh position={[0, -3.33, 0]} rotation={[-Math.PI/2, 0, 0]}> 
-            <sphereGeometry args={[6, 32, 32, 0, Math.PI]} />
-            <meshStandardMaterial color="blue" wireframe />
-        </mesh>
-        <mesh position={[0, -Math.PI-0.4,0 ]}>
-            <sphereGeometry args={[0.2, 32, 32]} />
-            <meshStandardMaterial color="black" />
-            <Html distanceFactor={10}>
-            <div style={{ color: 'white', background: 'black', padding: '2px' }}>Your position</div>
-            </Html>
-        </mesh>
-</>
-);
 
 // Main visualization component
 const Visualization = ({ }) => {
     const [satellites,setSatellites] = useState([])
-    const [loading,setLoading] = useState(true)
+    const [loading,setLoading] = useState(false);
     const [error, setError] = useState('')
     const [updateData,setUpdateData] = useAtom(updateDataState);
     const gnssNames = useAtomValue(gnssState);
     const elevationAngle = useAtomValue(elevationState);
     const time =useAtomValue(timeState);
-    // const [GDOP, setGDOP] = useState(0);
-    // const [subset, setSubset] = useState([]);
-    
+    const epoch = useAtomValue(epochState);
+    const labels = Array.from({ length: 2 * epoch }, (_, i) => 
+      new Date(time.getTime() + i * 30 * 60 * 1000).toISOString().slice(11, 16)
+    );
+    const [DOP, setDOP] = useState([[0,0,0]]);
+
     useEffect(() => {
-      setLoading(true);
+      //setLoading(true);
     
       const filteredGNSS = Object.keys(gnssNames).filter((key) => gnssNames[key]);
-      const endTime = new Date(time.getTime() + (2 * 60 * 60 * 1000));//sets the end time to 2 hours after the start time
     
       fetch('http://127.0.0.1:5000/satellites', {
         headers: {
@@ -73,9 +92,9 @@ const Visualization = ({ }) => {
         },
         method: "POST",
         body: JSON.stringify({
-          startTime: time.toISOString(),
-          endTime: endTime.toISOString(),
+          time: time.toISOString(),
           elevationAngle: elevationAngle.toString(),
+          epoch: epoch.toString(),
           GNSS: filteredGNSS,
         })
       })
@@ -86,57 +105,78 @@ const Visualization = ({ }) => {
         return response.json(); 
       })
       .then(data => {
-        console.log(data)
-        setSatellites(data.satellites);
+        console.log("updated",data)
+        setSatellites(fixData(data.data));
+        setDOP(data.DOP);
         setUpdateData(false);  
-        setLoading(false);  
+        //setLoading(false);  
       })
       .catch(error => {
         console.error('There was a problem with the fetch operation:', error);
-        setLoading(false);
+       
       });
+
+
     }, [updateData]);
     
-  if (loading) {
+  if (updateData) {
     return <p>Loading data...</p>;
   }
 
   if (error) {
     return <p>{error}</p>;
   }
-
   return (
-    <><div style={{ width: '1500px', height: '500px' }}>
-      <Canvas camera={{ position: [0, 0, 10], fov: 75 }}>
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} />
-        <HalfSphere />
-        {/* Iterate over the satellites */}
-        {satellites.map((satellite, idx) => {
-          // Convert dictionary-like structure to arrays using Object.keys
-          const satNumbers = Object.keys(satellite.Satelitenumber);
-          console.log(satNumbers);
-          return satNumbers.map((key) => {
-            //console.log(satellite.Satelitenumber[key])
-            const satName = satellite.Satelitenumber[key];
-            const azimuth = satellite.azimuth[key];
-            const zenith = satellite.zenith[key];
+    !satellites || satellites.length === 0 ? (
+      <p>Click on the update button to fetch data</p>
+    ) : (
+      <>
+      {/* Skyplot and Table Row */}
+      <div className="skyplot-table-container">
+        {/* Skyplot Container */}
+        <div className='skyplot'>
+          <SatelliteMap satellites={satellites} />
+        </div>
+      {/* Satellite Table */}
+        <div className="satellite-table">
+          {satellites[satellites.length - 1].map((satelliteGroup, index) => {
+            const satType = satelliteGroup.type;
+            const color = satelliteGroup.color;
+            return (
+              <div key={index} className="satellite-column">
+                <div className="satellite-name" style={{ backgroundColor: color }}>
+                  {satType}
+                </div>
+                {satelliteGroup.satellitesData.map((satellite, satIndex) => {
+                  const satName = satellite.satName;
+                  return (
+                    <div key={satIndex} className="satellite-number">
+                      <p>{satName}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
-            // Assuming sphericalToCartesian is a function to convert azimuth and elevation
-            const coordinates = sphericalToCartesian(6, azimuth, zenith, [0, 0, -Math.PI]);
+      {/* Chart Row: Bar Chart and Line Chart */}
+      <div className="chart-row">
+        {/* Bar Chart */}
+        <div className="chart-container">
+          <BarChartGraph data={satellites} labels={labels} />
+        </div>
 
-            return <Satellite key={`${idx}-${key}`} name={satName} position={coordinates} />;
-          });
-        })}
-        <OrbitControls />
-      </Canvas>
-    </div>
-    {/* <div>
-      <p>GDOP: {GDOP}</p>
-      <p>Subset: {subset}</p>
-    </div> */}
-      </>
+        {/* Line Chart */}
+        <div className="chart-container">
+          <LineChart data={DOP} labels={labels} />
+        </div>
+      </div>
+    </>
+    )
   );
+  
 };
 
 export default Visualization;

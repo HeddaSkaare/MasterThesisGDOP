@@ -2,15 +2,17 @@
 
 from flask import Flask, jsonify, request
 from computebaner import  runData
-#from computeDOP import best
+from computeDOP import best
 import logging
 from flask_cors import CORS
+from datetime import datetime
 
 # Set up basic configuration for logging
-logging.basicConfig(level=logging.INFO)
+#logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+CORS(app)
+#CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
 
 @app.route('/satellites', methods=['POST', 'OPTIONS'])
 def satellites():
@@ -18,19 +20,28 @@ def satellites():
         # Return 200 for the preflight check
         return '', 200
     data = request.json  
-    start_time = data.get('startTime')
-    end_time = data.get('endTime')
+    time = data.get('time').strip('Z')
     elevation_angle = data.get('elevationAngle')
     gnss = data.get('GNSS')
+    epoch = data.get('epoch')
+    
     is_prosessing = True
-    LGDF_dict, LGDF_df = runData(gnss, elevation_angle, start_time, end_time) 
-    #GDOP, subset = best(LGDF_df)
+    list, df = runData(gnss, elevation_angle, time, epoch) 
+    DOPvalues = best(df)
     is_prosessing = False
 
     if not is_prosessing:
-        return jsonify({'message': 'Data processed successfully', 'satellites': LGDF_dict}), 200
+        return jsonify({'message': 'Data processed successfully', 'data': list, 'DOP':DOPvalues}), 200
     else:
         return jsonify({"data": "Data is not ready"}), 202
+
+@app.route('/initialize', methods=['GET'])
+def initialize():
+    #todays date in strdatetimeformat 
+    today = datetime.today().strftime("%Y-%m-%d %H:%M:%S.%f")
+    newData, newDataDf = runData(["GPS","GLONASS","BeiDou", "Galileo", "NavIC", "SBAS"], "10", today ,"2")
+    DOPvalues = best(newDataDf)
+    return jsonify({'data': newData, 'DOP':DOPvalues }), 200
 
 
 @app.route('/submit-filter', methods=['POST'])
