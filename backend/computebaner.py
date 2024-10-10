@@ -86,7 +86,8 @@ def visualCheck(dataframe, recieverPos0, elevationInput):
 def runData(gnss_list, elevationstring, t, epoch):
     given_date = datetime.strptime(t, "%Y-%m-%dT%H:%M:%S.%f")
     start_date = datetime(2024, 1, 1)
-    days_difference = (given_date - start_date).days 
+    days_difference = (given_date - start_date).days + 1 
+    print(days_difference)
     daynumber = f"{days_difference:03d}"
     sortData(daynumber)
     gnss_mapping = {
@@ -115,7 +116,36 @@ def runData(gnss_list, elevationstring, t, epoch):
         final_list.append(LGDF_dict)
         final_listdf.append(LGDF_df)
     return final_list, final_listdf
+
+def runData2(daynum, gnss_list, elevationstring, t, epoch):
+
+    sortData(daynum)
+    gnss_mapping = {
+        'GPS': pd.read_csv(f"DataFrames/{daynum}/structured_dataG.csv"),
+        'GLONASS': pd.read_csv(f"DataFrames/{daynum}/structured_dataR.csv"),
+        'Galileo': pd.read_csv(f"DataFrames/{daynum}/structured_dataE.csv"),
+        'QZSS': pd.read_csv(f"DataFrames/{daynum}/structured_dataJ.csv"),
+        'BeiDou': pd.read_csv(f"DataFrames/{daynum}/structured_dataC.csv"),
+        'NavIC': pd.read_csv(f"DataFrames/{daynum}/structured_dataI.csv"),
+        'SBAS': pd.read_csv(f"DataFrames/{daynum}/structured_dataS.csv")
+    }
+    elevation = float(elevationstring)
+    #create a list that contains the seconds for every halfhour in the epoch when epoch is hours
+    final_list = []
+    final_listdf = []
+    for i in range(0, int(epoch)*2):
+        time = pd.to_datetime(t)+ pd.Timedelta(minutes=i*30)
+        LGDF_dict = []
+        LGDF_df = []
+        for gnss in gnss_list:
+            positions = get_satellite_positions(gnss_mapping[gnss],gnss,time)
+            data = visualCheck(positions, recieverPos0, elevation)
+            if not data.empty:
+                LGDF_dict += [data.to_dict()]  
+                LGDF_df += [data]
+        final_list.append(LGDF_dict)
+        final_listdf.append(LGDF_df)
+    return final_list, final_listdf
  
+runData(["GPS","Galileo"], "10", "2024-10-09T04:00:00.000", "1")
 
-
-#runData(["GPS","GLONASS","BeiDou", "Galileo", "NavIC", "SBAS"], "10", "2024-09-26T04:00:00.000", "2")

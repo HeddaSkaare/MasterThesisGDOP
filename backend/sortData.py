@@ -275,16 +275,20 @@ def sortData(daynumber):
         folderCDDIS = "CDDIS/"
         folderUnzipped = "unzipped/"
         filename = "BRDC00IGS_R_2024"+ daynumber+"0000_01D_MN.rnx.gz"
-        
+        unzipped_filename = filename[:-3]
 
-        unzipped_filename = filename[:-3]  # Remove '.gz' from filename
-        with gzip.open(folderCDDIS+filename, 'rb') as f_in:
-            with open(folderUnzipped+unzipped_filename, 'wb') as f_out:
-                shutil.copyfileobj(f_in, f_out)
-        
-        content = []
-        with open(folderUnzipped+unzipped_filename, "r") as file:
-            content = file.read()
+        if os.path.exists(folderCDDIS + filename):
+            # Unzip the file
+            with gzip.open(folderCDDIS + filename, 'rb') as f_in:
+                with open(folderUnzipped + unzipped_filename, 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+            # Read the unzipped file content
+            content = []
+            with open(folderUnzipped + unzipped_filename, "r") as file:
+                content = file.read()
+        else:
+            newdaynumber = int(daynumber) - 1
+            daynumber = f"{newdaynumber:03d}"
 
         split_index = content.index("END OF HEADER")
         header_part = content[:split_index] # baneinformasjon
