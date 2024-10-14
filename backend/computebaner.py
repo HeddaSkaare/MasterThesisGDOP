@@ -86,8 +86,9 @@ def visualCheck(dataframe, recieverPos0, elevationInput):
 def runData(gnss_list, elevationstring, t, epoch):
     given_date = datetime.strptime(t, "%Y-%m-%dT%H:%M:%S.%f")
     start_date = datetime(2024, 1, 1)
-    days_difference = (given_date - start_date).days + 1 
-    print(days_difference)
+    days_difference = (given_date - start_date).days + 1
+    if given_date.date() == datetime.now().date():
+        days_difference -= 1
     daynumber = f"{days_difference:03d}"
     sortData(daynumber)
     gnss_mapping = {
