@@ -277,19 +277,15 @@ def sortData(daynumber):
         filename = "BRDC00IGS_R_2024"+ daynumber+"0000_01D_MN.rnx.gz"
         unzipped_filename = filename[:-3]
 
-        if os.path.exists(folderCDDIS + filename):
-            # Unzip the file
-            with gzip.open(folderCDDIS + filename, 'rb') as f_in:
-                with open(folderUnzipped + unzipped_filename, 'wb') as f_out:
-                    shutil.copyfileobj(f_in, f_out)
-            # Read the unzipped file content
-            content = []
-            with open(folderUnzipped + unzipped_filename, "r") as file:
-                content = file.read()
-        else:
-            newdaynumber = int(daynumber) - 1
-            daynumber = f"{newdaynumber:03d}"
-
+    
+        # Unzip the file
+        with gzip.open(folderCDDIS + filename, 'rb') as f_in:
+            with open(folderUnzipped + unzipped_filename, 'wb') as f_out:
+                shutil.copyfileobj(f_in, f_out)
+        # Read the unzipped file content
+        content = []
+        with open(folderUnzipped + unzipped_filename, "r") as file:
+            content = file.read()
         split_index = content.index("END OF HEADER")
         header_part = content[:split_index] # baneinformasjon
         data_part = content[split_index+13:] #satelitt informasjon
@@ -398,3 +394,5 @@ def sortData(daynumber):
         file_pathS = os.path.join("DataFrames",daynumber, "structured_dataS.csv")
         structured_dataS.to_csv(file_pathS, index=False)
 
+
+    

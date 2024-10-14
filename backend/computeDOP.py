@@ -30,7 +30,7 @@ def geometric_range(sat_pos, rec_pos):
                    (sat_pos[1] - rec_pos[1])**2 +
                    (sat_pos[2] - rec_pos[2])**2)
 
-print(recieverPos0)
+
 def DOPvalues(satellites, recieverPos0):
     size = len(satellites)
     A = np.zeros((size, 4))  
@@ -40,21 +40,16 @@ def DOPvalues(satellites, recieverPos0):
     i = 0
     for satellite in satellites:
         rho_i = geometric_range([satellite[2], satellite[3], satellite[4]], recieverPos0)
-        print(rho_i)
+
         A[i][0] = -((satellite[2]-recieverPos0[0]) / rho_i)
         A[i][1] = -((satellite[3] - recieverPos0[1]) / rho_i)
         A[i][2] = -((satellite[4] - recieverPos0[2] ) / rho_i)
-        A[i][3] = -c 
+        A[i][3] = -1
         i +=1
     
     AT = A.T
     ATA = AT@A
-    print("at")
-    print(A)
     Qxx = np.linalg.inv(ATA)
-    print("Qxx")
-    print(Qxx)
-    print('')
     GDOP = np.sqrt(Qxx[0][0] + Qxx[1][1] + Qxx[2][2] + Qxx[3][3])
     PDOP = np.sqrt(Qxx[0][0] + Qxx[1][1] + Qxx[2][2])
     TDOP = np.sqrt(Qxx[3][3])
@@ -76,6 +71,6 @@ def best(satellites):
     
     return final_DOP_values
 
-data, datadf = runData(["GPS"], "10", "2024-09-26T04:00:00.000", "6")
+# data, datadf = runData(["GPS"], "10", "2024-09-26T04:00:00.000", "6")
 
-best(datadf)
+# best(datadf)
