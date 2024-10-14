@@ -4,13 +4,21 @@ import pandas as pd
 #runData3(["GPS"], "0", "2023-12-11T10:13:34.000")
 
 import numpy as np
-# import h5py
-# f = h5py.File('fromPHD/RN05345W1_L12.mat','r')
-# data = f.get('')
-# data = np.array(data) # For converting to a NumPy array
-# f.close()
-# print(data)
-xyzfile = pd.read_csv("testPHDresults.csv")
+import scipy.io as sio
+
+# Load the .mat file
+data = sio.loadmat('example.mat')
+
+# Print the keys to see what variables are stored in the file
+print(data.keys())
+
+# # Access specific variables
+# your_variable = data['your_variable_name']
+
+# # Print or manipulate the data
+# print(your_variable)
+
+#xyzfile = pd.read_csv("testPHDresults.csv")
 
 # WGS84 ellipsoid constants
 a = 6378137.0  # Semi-major axis
