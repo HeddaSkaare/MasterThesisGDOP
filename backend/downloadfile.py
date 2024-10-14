@@ -1,7 +1,7 @@
 import requests
 import gzip
 import os
-day = 287
+#day = 287
 folder = 'backend/unzipped/'
 
 def lastned(day):
@@ -26,4 +26,4 @@ def lastned(day):
     else:
         print('File Exists')
 
-lastned(day)
+#lastned(day)
