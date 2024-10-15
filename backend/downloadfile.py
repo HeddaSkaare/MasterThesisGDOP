@@ -2,7 +2,7 @@ import requests
 import gzip
 import os
 #day = 287
-folder = 'backend/unzipped/'
+folder = 'unzipped/'
 
 def lastned(day):
     filename = f'BRDC00IGS_R_2024{day}0000_01D_MN.rnx.gz'

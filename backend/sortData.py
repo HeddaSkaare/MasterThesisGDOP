@@ -9,6 +9,7 @@ from dataframes import structured_dataG, structured_dataR, structured_dataE, str
 import os
 import gzip
 import shutil
+from downloadfile import lastned
 
 # G: GPS
 # R: GLONASS
@@ -272,19 +273,11 @@ def sortData(daynumber):
     if os.path.exists("DataFrames/"+ daynumber+"/structured_dataG.csv"):
         return
     else:
-        folderCDDIS = "CDDIS/"
-        folderUnzipped = "unzipped/"
-        filename = "BRDC00IGS_R_2024"+ daynumber+"0000_01D_MN.rnx.gz"
-        unzipped_filename = filename[:-3]
+        filename = "unzipped/BRDC00IGS_R_2024"+ daynumber+"0000_01D_MN.rnx"
+        lastned(daynumber)
 
-    
-        # Unzip the file
-        with gzip.open(folderCDDIS + filename, 'rb') as f_in:
-            with open(folderUnzipped + unzipped_filename, 'wb') as f_out:
-                shutil.copyfileobj(f_in, f_out)
-        # Read the unzipped file content
         content = []
-        with open(folderUnzipped + unzipped_filename, "r") as file:
+        with open(filename, "r") as file:
             content = file.read()
         split_index = content.index("END OF HEADER")
         header_part = content[:split_index] # baneinformasjon
@@ -376,7 +369,6 @@ def sortData(daynumber):
                     values_list[j] = floatNumber
 
             Galileiodata(satellitt_id,time,values_list, SV)
-
         output_folder = "DataFrames/"+daynumber
         os.makedirs(output_folder, exist_ok=True)
         file_pathG = os.path.join("DataFrames",daynumber, "structured_dataG.csv")

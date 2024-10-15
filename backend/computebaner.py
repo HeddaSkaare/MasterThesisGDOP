@@ -118,210 +118,53 @@ def runData(gnss_list, elevationstring, t, epoch):
         final_listdf.append(LGDF_df)
     return final_list, final_listdf
 
-def runData2(daynum, gnss_list, elevationstring, t, epoch):
+# test funksjoner
+def visualCheck2(dataframe, recieverPos0, elevationInput):
+    LGDF = pd.DataFrame(columns = ["satelite_id","time", "X","Y","Z", "azimuth", "zenith"])
+    for index, row in dataframe.iterrows():
+        deltax = row["X"]-recieverPos0[0]
+        deltay = row["Y"]-recieverPos0[1]
+        deltaz = row["Z"]-recieverPos0[2]
+        deltaCTRS = np.array([deltax,deltay,deltaz])
+        
+        xyzLG = T @ deltaCTRS.T
+        xyzLG = np.array(xyzLG).flatten() 
+        #calculate angles
+        Ss = (xyzLG[0]**2 + xyzLG[1]**2 + xyzLG[2]**2)**(0.5)
+        Sh = (xyzLG[0]**2 + xyzLG[1]**2 )**(0.5)
+        azimuth = np.arctan2(xyzLG[1],xyzLG[0]) *180/np.pi
+        zenith = np.arccos(xyzLG[2]/Ss)* 180/np.pi
+        elevation = 90- zenith
+        if azimuth < 0:
+            azimuth = 360 + azimuth
+        if(elevation >=elevationInput):
+            LGDF.loc[len(LGDF)] = [row["satelite_id"],row["time"],row["X"],row["Y"],row["Z"], azimuth,zenith]
+    
+    return LGDF
 
-    sortData(daynum)
+
+
+def runData3(gnss_list, elevationstring, t, str, recpos):
+    daynumber = "345"    
     gnss_mapping = {
-        'GPS': pd.read_csv(f"DataFrames/{daynum}/structured_dataG.csv"),
-        'GLONASS': pd.read_csv(f"DataFrames/{daynum}/structured_dataR.csv"),
-        'Galileo': pd.read_csv(f"DataFrames/{daynum}/structured_dataE.csv"),
-        'QZSS': pd.read_csv(f"DataFrames/{daynum}/structured_dataJ.csv"),
-        'BeiDou': pd.read_csv(f"DataFrames/{daynum}/structured_dataC.csv"),
-        'NavIC': pd.read_csv(f"DataFrames/{daynum}/structured_dataI.csv"),
-        'SBAS': pd.read_csv(f"DataFrames/{daynum}/structured_dataS.csv")
+        'GPS': pd.read_csv(f"DataFrames/{daynumber}/structured_dataG.csv"),
     }
     elevation = float(elevationstring)
     #create a list that contains the seconds for every halfhour in the epoch when epoch is hours
-    final_list = []
-    final_listdf = []
-    for i in range(0, int(epoch)*2):
-        time = pd.to_datetime(t)+ pd.Timedelta(minutes=i*30)
-        LGDF_dict = []
-        LGDF_df = []
-        for gnss in gnss_list:
-            positions = get_satellite_positions(gnss_mapping[gnss],gnss,time)
-            data = visualCheck(positions, recieverPos0, elevation)
-            if not data.empty:
-                LGDF_dict += [data.to_dict()]  
-                LGDF_df += [data]
-        final_list.append(LGDF_dict)
-        final_listdf.append(LGDF_df)
-    return final_list, final_listdf
- 
-#runData(["GPS","Galileo"], "10", "2024-10-09T04:00:00.000", "1")
-
-# def runData1(gnss_list, elevationstring, t):
-#     daynumber = "345"
-#     # given_date = datetime.strptime(t, "%Y-%m-%dT%H:%M:%S.%f")
-#     # start_date = datetime(2024, 1, 1)
-#     # days_difference = (given_date - start_date).days + 1 
-#     # daynumber = f"{days_difference:03d}"
-#     # sortData(daynumber)
-    
-#     gnss_mapping = {
-#         'GPS': pd.read_csv(f"DataFrames/{daynumber}/structured_dataG.csv"),
-#         'GLONASS': pd.read_csv(f"DataFrames/{daynumber}/structured_dataR.csv"),
-#         'Galileo': pd.read_csv(f"DataFrames/{daynumber}/structured_dataE.csv"),
-#         'BeiDou': pd.read_csv(f"DataFrames/{daynumber}/structured_dataC.csv"),
-#     }
-#     elevation = float(elevationstring)
-#     #create a list that contains the seconds for every halfhour in the epoch when epoch is hours
-#     with open ('testPHDresults.txt','w') as f:
-#         for i in range(0, 7):
-#             time = pd.to_datetime(t)+ pd.Timedelta(seconds=i)
-#             f.write(f"Time: {time} \n")
-#             f.write(f"Satellitenumber   X   Y   Z\n")
-#             satellites = 0
-#             for gnss in gnss_list:
-#                 positions = get_satellite_positions(gnss_mapping[gnss],gnss,time)
-#                 data = visualCheck(positions, recieverPos0, elevation)
-#                 if not data.empty:
-#                     satellites += len(data)
-#                     for index, row in data.iterrows():
-#                         f.write(f"{row['Satelitenumber']} {row['X']} {row['Y']} {row['Z']}\n")
-#             f.write(f"{satellites} satellites\n")
-#         f.close() 
-# #sammenligne med csv filen  
-# def runData3(gnss_list, elevationstring, t):
-#     daynumber = "345"    
-#     gnss_mapping = {
-#         'GPS': pd.read_csv(f"DataFrames/{daynumber}/structured_dataG.csv"),
-#     }
-#     elevation = float(elevationstring)
-#     #create a list that contains the seconds for every halfhour in the epoch when epoch is hours
-#     with open ('testPHDresults.csv','w') as f:
-#         f.write(f"Satellitenumber,TOW,X,Y,Z,\n")
-#         for i in range(0, 50):
-#             time = pd.to_datetime(t)+ pd.Timedelta(seconds=i)
+    with open (f'{str}.csv','w') as f:
+        f.write(f"Satellitenumber,time,X,Y,Z,zenith, azimuth\n")
+        for i in range(0, 1):
+            time = pd.to_datetime(t)+ pd.Timedelta(seconds=i)
       
-#             for gnss in gnss_list:
-#                 positions = get_satellite_positions(gnss_mapping[gnss],gnss,time)
-#                 if not positions.empty:
-              
-#                     for index, row in positions.iterrows():
-#                         if(row['satelite_id'] == "G05"):
-#                             f.write(f"{row['satelite_id']}, {row['TOW']}, {row['X']}, {row['Y']}, {row['Z']}\n")
+            for gnss in gnss_list:
+                positions = get_satellite_positions(gnss_mapping[gnss],gnss,time)
+   
+                if not positions.empty:
+                    visual = visualCheck2(positions, recpos, 10)
+                    for index, row in visual.iterrows():
+                        
+                        f.write(f"{row['satelite_id']}, {row['time']}, {row['X']}, {row['Y']}, {row['Z']} ,{row['zenith']}, {row['azimuth']}\n")
             
-#         f.close() 
+        f.close() 
     
-# #for testing pas and new data and accuracy
-# def runData2(daynum, gnss_list, elevationstring, t, epoch):
-
-#     sortData(daynum)
-#     gnss_mapping = {
-#         'GPS': pd.read_csv(f"DataFrames/{daynum}/structured_dataG.csv"),
-#         'GLONASS': pd.read_csv(f"DataFrames/{daynum}/structured_dataR.csv"),
-#         'Galileo': pd.read_csv(f"DataFrames/{daynum}/structured_dataE.csv"),
-#         'QZSS': pd.read_csv(f"DataFrames/{daynum}/structured_dataJ.csv"),
-#         'BeiDou': pd.read_csv(f"DataFrames/{daynum}/structured_dataC.csv"),
-#         'NavIC': pd.read_csv(f"DataFrames/{daynum}/structured_dataI.csv"),
-#         'SBAS': pd.read_csv(f"DataFrames/{daynum}/structured_dataS.csv")
-#     }
-#     elevation = float(elevationstring)
-#     #create a list that contains the seconds for every halfhour in the epoch when epoch is hours
-#     final_list = []
-#     final_listdf = []
-#     for i in range(0, int(epoch)*2):
-#         time = pd.to_datetime(t)+ pd.Timedelta(minutes=i*30)
-#         LGDF_dict = []
-#         LGDF_df = []
-#         for gnss in gnss_list:
-#             positions = get_satellite_positions(gnss_mapping[gnss],gnss,time)
-#             data = visualCheck(positions, recieverPos0, elevation)
-#             if not data.empty:
-#                 LGDF_dict += [data.to_dict()]  
-#                 LGDF_df += [data]
-#         final_list.append(LGDF_dict)
-#         final_listdf.append(LGDF_df)
-#     return final_list, final_listdf
- 
-
-
-
-# def runData1(gnss_list, elevationstring, t):
-#     daynumber = "345"
-#     # given_date = datetime.strptime(t, "%Y-%m-%dT%H:%M:%S.%f")
-#     # start_date = datetime(2024, 1, 1)
-#     # days_difference = (given_date - start_date).days + 1 
-#     # daynumber = f"{days_difference:03d}"
-#     # sortData(daynumber)
-    
-#     gnss_mapping = {
-#         'GPS': pd.read_csv(f"DataFrames/{daynumber}/structured_dataG.csv"),
-#         'GLONASS': pd.read_csv(f"DataFrames/{daynumber}/structured_dataR.csv"),
-#         'Galileo': pd.read_csv(f"DataFrames/{daynumber}/structured_dataE.csv"),
-#         'BeiDou': pd.read_csv(f"DataFrames/{daynumber}/structured_dataC.csv"),
-#     }
-#     elevation = float(elevationstring)
-#     #create a list that contains the seconds for every halfhour in the epoch when epoch is hours
-#     with open ('testPHDresults.txt','w') as f:
-#         for i in range(0, 7):
-#             time = pd.to_datetime(t)+ pd.Timedelta(seconds=i)
-#             f.write(f"Time: {time} \n")
-#             f.write(f"Satellitenumber   X   Y   Z\n")
-#             satellites = 0
-#             for gnss in gnss_list:
-#                 positions = get_satellite_positions(gnss_mapping[gnss],gnss,time)
-#                 data = visualCheck(positions, recieverPos0, elevation)
-#                 if not data.empty:
-#                     satellites += len(data)
-#                     for index, row in data.iterrows():
-#                         f.write(f"{row['Satelitenumber']} {row['X']} {row['Y']} {row['Z']}\n")
-#             f.write(f"{satellites} satellites\n")
-#         f.close() 
-# #sammenligne med csv filen  
-# def runData3(gnss_list, elevationstring, t):
-#     daynumber = "345"    
-#     gnss_mapping = {
-#         'GPS': pd.read_csv(f"DataFrames/{daynumber}/structured_dataG.csv"),
-#     }
-#     elevation = float(elevationstring)
-#     #create a list that contains the seconds for every halfhour in the epoch when epoch is hours
-#     with open ('testPHDresults.csv','w') as f:
-#         f.write(f"Satellitenumber,TOW,X,Y,Z,\n")
-#         for i in range(0, 50):
-#             time = pd.to_datetime(t)+ pd.Timedelta(seconds=i)
-      
-#             for gnss in gnss_list:
-#                 positions = get_satellite_positions(gnss_mapping[gnss],gnss,time)
-#                 if not positions.empty:
-              
-#                     for index, row in positions.iterrows():
-#                         if(row['satelite_id'] == "G05"):
-#                             f.write(f"{row['satelite_id']}, {row['TOW']}, {row['X']}, {row['Y']}, {row['Z']}\n")
-            
-#         f.close() 
-    
-# #for testing pas and new data and accuracy
-# def runData2(daynum, gnss_list, elevationstring, t, epoch):
-
-#     sortData(daynum)
-#     gnss_mapping = {
-#         'GPS': pd.read_csv(f"DataFrames/{daynum}/structured_dataG.csv"),
-#         'GLONASS': pd.read_csv(f"DataFrames/{daynum}/structured_dataR.csv"),
-#         'Galileo': pd.read_csv(f"DataFrames/{daynum}/structured_dataE.csv"),
-#         'QZSS': pd.read_csv(f"DataFrames/{daynum}/structured_dataJ.csv"),
-#         'BeiDou': pd.read_csv(f"DataFrames/{daynum}/structured_dataC.csv"),
-#         'NavIC': pd.read_csv(f"DataFrames/{daynum}/structured_dataI.csv"),
-#         'SBAS': pd.read_csv(f"DataFrames/{daynum}/structured_dataS.csv")
-#     }
-#     elevation = float(elevationstring)
-#     #create a list that contains the seconds for every halfhour in the epoch when epoch is hours
-#     final_list = []
-#     final_listdf = []
-#     for i in range(0, int(epoch)*2):
-#         time = pd.to_datetime(t)+ pd.Timedelta(minutes=i*30)
-#         LGDF_dict = []
-#         LGDF_df = []
-#         for gnss in gnss_list:
-#             positions = get_satellite_positions(gnss_mapping[gnss],gnss,time)
-#             data = visualCheck(positions, recieverPos0, elevation)
-#             if not data.empty:
-#                 LGDF_dict += [data.to_dict()]  
-#                 LGDF_df += [data]
-#         final_list.append(LGDF_dict)
-#         final_listdf.append(LGDF_df)
-#     return final_list, final_listdf
- 
-
 

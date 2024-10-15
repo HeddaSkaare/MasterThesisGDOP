@@ -82,12 +82,17 @@ def cartesianC_list(data, time):
     diff = 18000000000000
     endRow = []
     for index, row in data.iterrows():
+        
         if (row["Datetime"] < time) and ((time-row["Datetime"]).total_seconds() < diff):
             diff = (time-row["Datetime"]).total_seconds()
+            #bergener fargen selv
+         
+            #for glonass og for sbas så beveger disse satelittene seg veldig lite når man er pås amme fag fordi farten man får er 0, så burde kalkulere dette på en annen måte
             x = row["X"] + row["Vx"]*diff + 0.5*row["ax"]*diff**2
             y = row["Y"] + row["Vy"]*diff + 0.5*row["ay"]*diff**2
             z = row["Z"] + row["Vz"]*diff + 0.5*row["az"]*diff**2
             endRow = [row["satelite_id"],time.strftime("%Y-%m-%dT%H:%M:%S.%f"), x*1000, y*1000,z*1000] 
+
     return endRow
 
 #kommer annenhver time 7200 sek
@@ -135,4 +140,23 @@ def get_satellite_positions(data,gnss,time):
                 positions.loc[len(positions)] = cartesianB_list(group, time)
     return positions
 
+#testing
 
+# def get_satellite_positiontest(data,gnss,time):
+#     data['Datetime'] = pd.to_datetime(data['Datetime'])
+#     dataGrouped = data.groupby("satelite_id")
+#     time = pd.to_datetime(time)
+#     positions = pd.DataFrame(columns = ["satelite_id","TOW", "X", "Y", "Z" ])
+#     if(gnss == "GPS") or (gnss == "Galileo"):
+#         for key, group in dataGrouped:
+#             if(cartesianA_list(group, time) != []):
+#                 positions.loc[len(positions)] = cartesianA_list(group, time)
+#     elif(gnss == "GLONASS") or (gnss == "SBAS"):
+#         for key, group in dataGrouped:
+#             if(cartesianC_list(group, time) != []):
+#                 positions.loc[len(positions)] = cartesianC_list(group, time)
+#     elif(gnss == "BeiDou") or (gnss == "QZSS") or (gnss == "IRNSS"):
+#         for key, group in dataGrouped:
+#             if(cartesianB_list(group, time) != []):
+#                 positions.loc[len(positions)] = cartesianB_list(group, time)
+#     return positions
