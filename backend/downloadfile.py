@@ -5,6 +5,7 @@ import os
 folder = 'unzipped/'
 
 def lastned(day):
+    print(day)
     filename = f'BRDC00IGS_R_2024{day}0000_01D_MN.rnx.gz'
 
     url = f'https://cddis.nasa.gov/archive/gnss/data/daily/2024/brdc/{filename}'

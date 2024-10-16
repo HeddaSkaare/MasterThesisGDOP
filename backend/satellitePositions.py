@@ -80,28 +80,30 @@ def cartesianB_list(data, time):
 
 def cartesianC_list(data, time):
     diff = 18000000000000
-    prevRow = None
+    prevRow = []
     endRow = []
-    print(data.shape)
     if not data.empty:
         for index, row in data.iterrows():
+            
             if (row["Datetime"] < time) and ((time-row["Datetime"]).total_seconds() < diff):
                 diff = (time-row["Datetime"]).total_seconds()
                 #bergener farten selv
-                if prevRow != None:
-                    prevTime = (row["Datetime"]-prevRow["Datetime"]).total_seconds()
-                    vx = (row["X"]-prevRow["X"])/prevTime
-                    vy = (row["Y"]-prevRow["Y"])/prevTime
-                    vz = (row["Z"]-prevRow["Z"])/prevTime
-                    x = row["X"] + vx*diff 
-                    y = row["Y"] + vy*diff
-                    z = row["Z"] + vz*diff
+                
+                if not len(prevRow) == 0:
+                    prevTime = (row["Datetime"]-prevRow[0]).total_seconds()
+                    vx = 1000*(row["X"]-prevRow[1])/prevTime
+                    vy = 1000*(row["Y"]-prevRow[2])/prevTime
+                    vz = 1000*(row["Z"]-prevRow[3])/prevTime
+                    x = row["X"]*1000 + vx*diff 
+                    y = row["Y"]*1000 + vy*diff
+                    z = row["Z"]*1000 + vz*diff
+                    endRow = [row["satelite_id"],time.strftime("%Y-%m-%dT%H:%M:%S.%f"), x, y,z]
                 else:
-                    x = row["X"] + row["Vx"]*diff + 0.5*row["ax"]*diff**2
-                    y = row["Y"] + row["Vy"]*diff + 0.5*row["ay"]*diff**2
-                    z = row["Z"] + row["Vz"]*diff + 0.5*row["az"]*diff**2
-                endRow = [row["satelite_id"],time.strftime("%Y-%m-%dT%H:%M:%S.%f"), x*1000, y*1000,z*1000] 
-            prevRow = row
+                    x = (row["X"] + row["Vx"]*diff + 0.5*row["ax"]*diff**2)*1000
+                    y = (row["Y"] + row["Vy"]*diff + 0.5*row["ay"]*diff**2)*1000
+                    z = (row["Z"] + row["Vz"]*diff + 0.5*row["az"]*diff**2)*1000
+                    endRow = [row["satelite_id"],time.strftime("%Y-%m-%dT%H:%M:%S.%f"), x, y,z] 
+            prevRow = [row['Datetime'], row["X"], row["Y"],row["Z"]] 
     return endRow
 
 #kommer annenhver time 7200 sek
@@ -157,6 +159,7 @@ def get_satellite_positions(data,gnss,time):
         for key, group in dataGrouped:
             if(cartesianB_list(group, time) != []):
                 positions.loc[len(positions)] = cartesianB_list(group, time)
+    print(positions)
     return positions
 
 #testing

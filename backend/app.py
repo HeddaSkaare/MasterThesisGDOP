@@ -1,6 +1,6 @@
 
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, make_response
 from computebaner import  runData
 from computeDOP import best
 import logging
@@ -11,29 +11,38 @@ from datetime import datetime
 #logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
-CORS(app)
-#CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+CORS(app, resources={r"/satellites": {"origins": "http://localhost:3000"}}, supports_credentials=True)
 
 @app.route('/satellites', methods=['POST', 'OPTIONS'])
 def satellites():
     if request.method == 'OPTIONS':
-        # Return 200 for the preflight check
-        return '', 200
+        # Handle the preflight request with necessary headers
+        response = jsonify({'status': 'Preflight request passed'})
+        response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
+        return response, 200
+
+    # Main POST request handling
     data = request.json  
     time = data.get('time').strip('Z')
     elevation_angle = data.get('elevationAngle')
     gnss = data.get('GNSS')
     epoch = data.get('epoch')
     
-    is_prosessing = True
+    is_processing = True
     list, df = runData(gnss, elevation_angle, time, epoch) 
     DOPvalues = best(df)
-    is_prosessing = False
-
-    if not is_prosessing:
-        return jsonify({'message': 'Data processed successfully', 'data': list, 'DOP':DOPvalues}), 200
+    is_processing = False
+    
+    if not is_processing:
+        response = jsonify({'message': 'Data processed successfully', 'data': list, 'DOP': DOPvalues})
+        response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")  
+        return response, 200
     else:
-        return jsonify({"data": "Data is not ready"}), 202
+        response = jsonify({"data": "Data is not ready"})
+        response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")  
+        return response, 202
 
 @app.route('/initialize', methods=['GET'])
 def initialize():

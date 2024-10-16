@@ -88,33 +88,33 @@ const Visualization = ({ }) => {
       fetch('http://127.0.0.1:5000/satellites', {
         headers: {
           'Accept': 'application/json',
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify({
           time: time.toISOString(),
           elevationAngle: elevationAngle.toString(),
           epoch: epoch.toString(),
           GNSS: filteredGNSS,
+        }),
+        mode: 'cors',
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json(); 
         })
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json(); 
-      })
-      .then(data => {
-        console.log("updated",data)
-        setSatellites(fixData(data.data));
-        setDOP(data.DOP);
-        setUpdateData(false);  
-        //setLoading(false);  
-      })
-      .catch(error => {
-        console.error('There was a problem with the fetch operation:', error);
-       
-      });
+        .then(data => {
+          console.log("updated", data);
+          setSatellites(fixData(data.data));
+          setDOP(data.DOP);
+          setUpdateData(false);
+        })
+        .catch(error => {
+          console.error('There was a problem with the fetch operation:', error);
+        });
+      
 
 
     }, [updateData]);
