@@ -9,13 +9,18 @@ function sphericalToCartesian2D(r, azimuth, zenith, center) {
   // Convert to radians
   azimuth = (azimuth * Math.PI) / 180;
   zenith = (zenith * Math.PI) / 180;
-  
+
   // Calculate X and Y based on 2D plane
   const x = r * Math.sin(zenith) * Math.cos(azimuth) + center[0];
   const y = r * Math.sin(zenith) * Math.sin(azimuth) + center[1];
-  
-  return [x, y];
+
+  // Rotate the coordinates 90 degrees to the left (around Z-axis)
+  const rotatedX = -y; // Swap and negate the y-coordinate to rotate 90 degrees left
+  const rotatedY = x;  // Set the new y-coordinate as the original x
+
+  return [rotatedX, rotatedY];
 }
+
 const SatelliteRoute = ({ points, color }) => (
   <Line
     points={points}  
@@ -51,6 +56,8 @@ const CircleOutline = ({ radius, position }) => {
 export const SatelliteMap = ({satellites}) => {
   const center = [0, 0];
   const radius = 4;
+  const elevations = [10, 60, 90]; // Example: 30°, 60°, 90° elevations
+  const radii = elevations.map(elev => radius * Math.cos((elev * Math.PI) / 180));
   let satellitesGrouped = {};
   satellites.map((satellitesBefore, index) =>
     satellitesBefore.map((satellites, innerIndex) => {
@@ -70,6 +77,9 @@ export const SatelliteMap = ({satellites}) => {
     <div className="skyplot-container">
       <Canvas className="skyplot-canvas" camera={{ position: [0, 0, 10], fov: 45 }}>
         <CircleOutline radius={radius} position={[0, 0, 0]} />
+        {radii.map((radius, index) => (
+          <CircleOutline key={index} radius={radius} position={[0, 0, 0]} />
+        ))}
         
         {Object.keys(satellitesGrouped).map((satName) => {
           let color = "white"

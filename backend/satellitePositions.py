@@ -80,23 +80,33 @@ def cartesianB_list(data, time):
 
 def cartesianC_list(data, time):
     diff = 18000000000000
+    prevRow = None
     endRow = []
-    for index, row in data.iterrows():
-        
-        if (row["Datetime"] < time) and ((time-row["Datetime"]).total_seconds() < diff):
-            diff = (time-row["Datetime"]).total_seconds()
-            #bergener fargen selv
-         
-            #for glonass og for sbas så beveger disse satelittene seg veldig lite når man er pås amme fag fordi farten man får er 0, så burde kalkulere dette på en annen måte
-            x = row["X"] + row["Vx"]*diff + 0.5*row["ax"]*diff**2
-            y = row["Y"] + row["Vy"]*diff + 0.5*row["ay"]*diff**2
-            z = row["Z"] + row["Vz"]*diff + 0.5*row["az"]*diff**2
-            endRow = [row["satelite_id"],time.strftime("%Y-%m-%dT%H:%M:%S.%f"), x*1000, y*1000,z*1000] 
-
+    print(data.shape)
+    if not data.empty:
+        for index, row in data.iterrows():
+            if (row["Datetime"] < time) and ((time-row["Datetime"]).total_seconds() < diff):
+                diff = (time-row["Datetime"]).total_seconds()
+                #bergener farten selv
+                if prevRow != None:
+                    prevTime = (row["Datetime"]-prevRow["Datetime"]).total_seconds()
+                    vx = (row["X"]-prevRow["X"])/prevTime
+                    vy = (row["Y"]-prevRow["Y"])/prevTime
+                    vz = (row["Z"]-prevRow["Z"])/prevTime
+                    x = row["X"] + vx*diff 
+                    y = row["Y"] + vy*diff
+                    z = row["Z"] + vz*diff
+                else:
+                    x = row["X"] + row["Vx"]*diff + 0.5*row["ax"]*diff**2
+                    y = row["Y"] + row["Vy"]*diff + 0.5*row["ay"]*diff**2
+                    z = row["Z"] + row["Vz"]*diff + 0.5*row["az"]*diff**2
+                endRow = [row["satelite_id"],time.strftime("%Y-%m-%dT%H:%M:%S.%f"), x*1000, y*1000,z*1000] 
+            prevRow = row
     return endRow
 
 #kommer annenhver time 7200 sek
 def cartesianA_list(data, time):
+    #obs = pd.read_csv("test/test1.csv")
     diff = 7201000000
     theIndex = 0
     i = 0
@@ -108,6 +118,14 @@ def cartesianA_list(data, time):
         i += 1
     row = data.iloc[theIndex]
     satelite_id = row["satelite_id"]
+    #sjekk om denne satelittiden eksisterer i obs
+    # if satelite_id in obs['Satellitenumber'].values:
+    #     obsRow = obs.loc[obs['Satellitenumber'] == satelite_id]
+    #     diffe = float(diff - (obsRow['P']/c) + obsRow['dt'])
+        
+    #     tk = TK(diffe)
+    # else:
+    #     tk = TK(diff)
     tk = TK(diff)
     Mk = MK(row["M0"],row["sqrt(A)"]**2, row["Delta n0"], tk)
     Ek = EK(Mk,row["e"],3)
@@ -123,6 +141,7 @@ def cartesianA_list(data, time):
     return [satelite_id, time.strftime("%Y-%m-%dT%H:%M:%S.%f") , coordinates[0], coordinates[1],coordinates[2]] 
 
 def get_satellite_positions(data,gnss,time):
+    
     data['Datetime'] = pd.to_datetime(data['Datetime'])
     dataGrouped = data.groupby("satelite_id")
     positions = pd.DataFrame(columns = ["satelite_id","time", "X", "Y", "Z" ])

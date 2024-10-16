@@ -104,8 +104,8 @@ def runData(gnss_list, elevationstring, t, epoch):
     #create a list that contains the seconds for every halfhour in the epoch when epoch is hours
     final_list = []
     final_listdf = []
-    for i in range(0, int(epoch)*2):
-        time = pd.to_datetime(t)+ pd.Timedelta(minutes=i*30)
+    for i in range(0, int(epoch)*4):
+        time = pd.to_datetime(t)+ pd.Timedelta(minutes=i*15)
         LGDF_dict = []
         LGDF_df = []
         for gnss in gnss_list:
@@ -148,6 +148,10 @@ def runData3(gnss_list, elevationstring, t, str, recpos):
     daynumber = "345"    
     gnss_mapping = {
         'GPS': pd.read_csv(f"DataFrames/{daynumber}/structured_dataG.csv"),
+        'Galileo': pd.read_csv(f"DataFrames/{daynumber}/structured_dataE.csv"),
+        'GLONASS': pd.read_csv(f"DataFrames/{daynumber}/structured_dataR.csv"),
+        'BeiDou': pd.read_csv(f"DataFrames/{daynumber}/structured_dataC.csv"),
+
     }
     elevation = float(elevationstring)
     #create a list that contains the seconds for every halfhour in the epoch when epoch is hours
@@ -155,10 +159,10 @@ def runData3(gnss_list, elevationstring, t, str, recpos):
         f.write(f"Satellitenumber,time,X,Y,Z,zenith, azimuth\n")
         for i in range(0, 1):
             time = pd.to_datetime(t)+ pd.Timedelta(seconds=i)
-      
+    
             for gnss in gnss_list:
                 positions = get_satellite_positions(gnss_mapping[gnss],gnss,time)
-   
+
                 if not positions.empty:
                     visual = visualCheck2(positions, recpos, 10)
                     for index, row in visual.iterrows():

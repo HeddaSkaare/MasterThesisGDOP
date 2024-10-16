@@ -8,12 +8,10 @@ import '../css/boxplot.css';
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 export const BarChartGraph = ({ data, labels }) => {
-  const newLabels = ['10', '9', '11', '8', '7', '6', '6', '7']; // X-axis labels
   const numberList = data.map((array) => 
     array.reduce((totalLength, objects) => totalLength + objects.satellitesData.length, 0)
   );
   
-
   const barChartData = {
     labels: labels, // X-axis categories
     datasets: [

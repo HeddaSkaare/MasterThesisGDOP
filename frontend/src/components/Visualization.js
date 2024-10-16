@@ -75,8 +75,8 @@ const Visualization = ({ }) => {
     const elevationAngle = useAtomValue(elevationState);
     const time =useAtomValue(timeState);
     const epoch = useAtomValue(epochState);
-    const labels = Array.from({ length: 2 * epoch }, (_, i) => 
-      new Date(time.getTime() + i * 30 * 60 * 1000).toISOString().slice(11, 16)
+    const labels = Array.from({ length: 4 * epoch }, (_, i) => 
+      new Date(time.getTime() + i * 15 * 60 * 1000).toISOString().slice(11, 16)
     );
     const [DOP, setDOP] = useState([[0,0,0]]);
 
