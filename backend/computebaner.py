@@ -75,7 +75,7 @@ def visualCheck(dataframe, recieverPos0, elevationInput):
         Sh = (xyzLG[0]**2 + xyzLG[1]**2 )**(0.5)
         azimuth = np.arctan2(xyzLG[1],xyzLG[0]) *180/np.pi
         zenith = np.arccos(xyzLG[2]/Ss)* 180/np.pi
-        elevation = 90- zenith
+        elevation = 90- abs(zenith)
         if azimuth < 0:
             azimuth = 360 + azimuth
         if(elevation >=elevationInput):
@@ -134,7 +134,8 @@ def visualCheck2(dataframe, recieverPos0, elevationInput):
         Sh = (xyzLG[0]**2 + xyzLG[1]**2 )**(0.5)
         azimuth = np.arctan2(xyzLG[1],xyzLG[0]) *180/np.pi
         zenith = np.arccos(xyzLG[2]/Ss)* 180/np.pi
-        elevation = 90- zenith
+        elevation = 90- abs(zenith)
+        print(elevation, elevationInput)
         if azimuth < 0:
             azimuth = 360 + azimuth
         if(elevation >=elevationInput):

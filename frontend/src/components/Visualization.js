@@ -135,7 +135,7 @@ const Visualization = ({ }) => {
       <div className="skyplot-table-container">
         {/* Skyplot Container */}
         <div className='skyplot'>
-          <SatelliteMap satellites={satellites} />
+          <SatelliteMap satellites={satellites} cutOffElevation={elevationAngle} />
         </div>
       {/* Satellite Table */}
         <div className="satellite-table">

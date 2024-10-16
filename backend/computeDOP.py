@@ -35,25 +35,29 @@ def DOPvalues(satellites, recieverPos0):
     size = len(satellites)
     A = np.zeros((size, 4))  
     Qxx =np.zeros((4, 4)) 
-    
-    #creates the A matrix
-    i = 0
-    for satellite in satellites:
-        rho_i = geometric_range([satellite[2], satellite[3], satellite[4]], recieverPos0)
+    if(size >= 4):
+        #creates the A matrix
+        i = 0
+        for satellite in satellites:
+            rho_i = geometric_range([satellite[2], satellite[3], satellite[4]], recieverPos0)
 
-        A[i][0] = -((satellite[2]-recieverPos0[0]) / rho_i)
-        A[i][1] = -((satellite[3] - recieverPos0[1]) / rho_i)
-        A[i][2] = -((satellite[4] - recieverPos0[2] ) / rho_i)
-        A[i][3] = -1
-        i +=1
-    
-    AT = A.T
-    ATA = AT@A
-    Qxx = np.linalg.inv(ATA)
-    GDOP = np.sqrt(Qxx[0][0] + Qxx[1][1] + Qxx[2][2] + Qxx[3][3])
-    PDOP = np.sqrt(Qxx[0][0] + Qxx[1][1] + Qxx[2][2])
-    TDOP = np.sqrt(Qxx[3][3])
+            A[i][0] = -((satellite[2]-recieverPos0[0]) / rho_i)
+            A[i][1] = -((satellite[3] - recieverPos0[1]) / rho_i)
+            A[i][2] = -((satellite[4] - recieverPos0[2] ) / rho_i)
+            A[i][3] = -1
+            i +=1
+        
+        AT = A.T
+        ATA = AT@A
+        Qxx = np.linalg.inv(ATA)
 
+        GDOP = np.sqrt(Qxx[0][0] + Qxx[1][1] + Qxx[2][2] + Qxx[3][3])
+        PDOP = np.sqrt(Qxx[0][0] + Qxx[1][1] + Qxx[2][2])
+        TDOP = np.sqrt(Qxx[3][3])
+    else:
+        GDOP = 0
+        PDOP = 0
+        TDOP = 0
     return GDOP,PDOP,TDOP
 
 def best(satellites):

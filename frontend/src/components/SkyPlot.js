@@ -1,22 +1,22 @@
 import React from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Html,Line,CatmullRomLine } from '@react-three/drei';
+import { Html,Line, Text } from '@react-three/drei';
 import { Satellite, SatelliteMovement, colors } from './Satellite';
 import { Vector3 } from 'three';
 import '../css/skyplot.css';
 
 function sphericalToCartesian2D(r, azimuth, zenith, center) {
   // Convert to radians
-  azimuth = (azimuth * Math.PI) / 180;
-  zenith = (zenith * Math.PI) / 180;
+  azimuth = (azimuth * Math.PI) / 180 ;
+  zenith = (zenith * Math.PI) / 180 ;
 
   // Calculate X and Y based on 2D plane
   const x = r * Math.sin(zenith) * Math.cos(azimuth) + center[0];
   const y = r * Math.sin(zenith) * Math.sin(azimuth) + center[1];
 
-  // Rotate the coordinates 90 degrees to the left (around Z-axis)
-  const rotatedX = -y; // Swap and negate the y-coordinate to rotate 90 degrees left
-  const rotatedY = x;  // Set the new y-coordinate as the original x
+  
+  const rotatedX = y; 
+  const rotatedY = x; 
 
   return [rotatedX, rotatedY];
 }
@@ -29,7 +29,7 @@ const SatelliteRoute = ({ points, color }) => (
     dashed={false}  // Optional: use dashed line if desired
   />
 );
-const CircleOutline = ({ radius, position }) => {
+const CircleOutline = ({ radius, position, color, lineWidth, text }) => {
     const points = [];
     // Create points along the circumference of a circle
     for (let i = 0; i <= 100; i++) {
@@ -38,25 +38,94 @@ const CircleOutline = ({ radius, position }) => {
     }
 
     return (
-    <><mesh position={position} rotation={[0, 0, 0]}>
-        {/* Create the circular geometry */}
-        <ringGeometry args={[radius - 0.05, radius, 64]} />
+    <>
+      <mesh position={position} rotation={[0, 0, 0]}>
+          {/* Create the circular geometry */}
+          <ringGeometry args={[radius - 0.05, radius, 64]} />
+          <meshBasicMaterial color="white" side={1} />
+      </mesh>
+      <Line
+        points={points} 
+        color={color}
+        lineWidth={lineWidth} 
+        position={position}
+        rotation={[0, 0, 0]} />
+      <Text
+        position={[points[0][0]+0.2,points[0][1]+0.2, points[0][2]]} // Position of the Y-axis label
+        fontSize={0.2}
+        color="black"
+      >
+        South
+      </Text>
+    </>
+    
+  );
+};
+const Axes = ({ radius = 4.1, color = 'white', lineWidth = 2 }) => {
+  // X-axis points
+  const xAxisPoints = [
+    [-radius, 0, 0], // From -radius to +radius on the X axis
+    [radius, 0, 0],
+  ];
 
-        <meshBasicMaterial color="white" side={2} />
-    </mesh>
-    <Line
-            points={points} // Array of [x, y, z] points
-            color="black"
-            lineWidth={2} // Optional: Adjust line thickness
-            position={position}
-            rotation={[0, 0, 0]} /></>
+  // Y-axis points
+  const yAxisPoints = [
+    [0, -radius, 0], // From -radius to +radius on the Y axis
+    [0, radius, 0],
+  ];
+
+  return (
+    <>
+      {/* X-axis */}
+      <Line
+        points={xAxisPoints} // Array of [x, y, z] points
+        color="grey" // X axis color
+        lineWidth={lineWidth} // Optional: Adjust line thickness
+      />
+      <Text
+        position={[radius + 0.25, 0, 0]} // Position of the X-axis label
+        fontSize={0.2}
+        color="black"
+      >
+        90°
+      </Text>
+      <Text
+        position={[-radius - 0.3, 0, 0]} // Position of the X-axis label
+        fontSize={0.2}
+        color="black"
+      >
+        270°
+      </Text>
+      {/* Y-axis */}
+      <Line
+        points={yAxisPoints} // Array of [x, y, z] points
+        color="green" // Y axis color
+        lineWidth={lineWidth} // Optional: Adjust line thickness
+      />
+      <Text
+        position={[0, radius + 0.1, 0]} // Position of the Y-axis label
+        fontSize={0.1}
+        color="green"
+      >
+        0°
+      </Text>
+      <Text
+        position={[0, -radius - 0.1, 0]} // Position of the Y-axis label
+        fontSize={0.1}
+        color="green"
+      >
+        180°
+      </Text>
+    </>
   );
 };
 
-export const SatelliteMap = ({satellites}) => {
+
+export const SatelliteMap = ({satellites, cutOffElevation}) => {
   const center = [0, 0];
   const radius = 4;
-  const elevations = [10, 60, 90]; // Example: 30°, 60°, 90° elevations
+  const cutOffRad = radius * Math.cos((cutOffElevation * Math.PI) / 180);
+  const elevations = [0, 40, 70]; // Example: 0°, 40°, 70° elevations
   const radii = elevations.map(elev => radius * Math.cos((elev * Math.PI) / 180));
   let satellitesGrouped = {};
   satellites.map((satellitesBefore, index) =>
@@ -75,10 +144,11 @@ export const SatelliteMap = ({satellites}) => {
   console.log(satellitesGrouped);
   return (
     <div className="skyplot-container">
-      <Canvas className="skyplot-canvas" camera={{ position: [0, 0, 10], fov: 45 }}>
-        <CircleOutline radius={radius} position={[0, 0, 0]} />
+      <Canvas className="skyplot-canvas" camera={{ position: [0, 0, 10], fov: 50 }}>
+        <Axes/>
+        <CircleOutline radius={cutOffRad} position={[0, 0, 0]} color={'black'}lineWidth={2} text = {cutOffElevation } />
         {radii.map((radius, index) => (
-          <CircleOutline key={index} radius={radius} position={[0, 0, 0]} />
+          <CircleOutline key={index} radius={radius} position={[0, 0, 0]} color={'grey'} lineWidth={1} text = {''} />
         ))}
         
         {Object.keys(satellitesGrouped).map((satName) => {

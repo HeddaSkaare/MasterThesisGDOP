@@ -21,9 +21,7 @@ from downloadfile import lastned
 
 
 def split_on_second_sign(s):
-    
     signs = [m.start() for m in re.finditer(r'(?<![eE])[+-]', s)]
-    
     if not signs:
         return s
 
