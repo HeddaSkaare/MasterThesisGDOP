@@ -2,4 +2,6 @@ node_modules/
 venv/
 .venv/
 .DS_Store
+/backend/DataFrames/
+/backend/unzipped/
 
