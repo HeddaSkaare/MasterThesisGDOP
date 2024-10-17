@@ -20,7 +20,26 @@ function sphericalToCartesian2D(r, azimuth, zenith, center) {
 
   return [rotatedX, rotatedY];
 }
+const groupSatellites = (satellites, colors, radius, center) => {
+  const satellitesGrouped = {};
 
+  satellites.forEach(satelliteGroup => {
+    satelliteGroup.forEach(satelliteSubGroup => {
+      satelliteSubGroup.satellitesData.forEach(satellite => {
+        const { satName, azimuth, zenith } = satellite;
+        const color = colors[satName[0]];
+        const [x, y] = sphericalToCartesian2D(radius, azimuth, zenith, center);
+
+        if (!satellitesGrouped[satName]) {
+          satellitesGrouped[satName] = [];
+        }
+        satellitesGrouped[satName].push([x, y, color]);
+      });
+    });
+  });
+
+  return satellitesGrouped;
+};
 const SatelliteRoute = ({ points, color }) => (
   <Line
     points={points}  
@@ -55,7 +74,7 @@ const CircleOutline = ({ radius, position, color, lineWidth, text }) => {
         fontSize={0.15}
         color="black"
       >
-        {text} °
+        {text}
       </Text>
     </>
     
@@ -127,20 +146,8 @@ export const SatelliteMap = ({satellites, cutOffElevation}) => {
   const cutOffRad = radius * Math.cos((cutOffElevation * Math.PI) / 180);
   const elevations = [0, 40, 70]; // Example: 0°, 40°, 70° elevations
   const radii = elevations.map(elev => radius * Math.cos((elev * Math.PI) / 180));
-  let satellitesGrouped = {};
-  satellites.map((satellitesBefore, index) =>
-    satellitesBefore.map((satellites, innerIndex) => {
-      satellites.satellitesData.map((satellite) => {
-        const color = colors[satellite.satName[0]];
-        const { azimuth, zenith } = satellite;
-        const coords = sphericalToCartesian2D(radius, azimuth, zenith, center);
-        if (!satellitesGrouped[satellite.satName]) {
-          satellitesGrouped[satellite.satName] = [[coords[0], coords[1], color]];
-        }else{
-          satellitesGrouped[satellite.satName].push([coords[0], coords[1], color]);
-        }
-      });
-    }))
+  const satellitesGrouped = groupSatellites(satellites, colors, radius, center);
+
   //console.log(satellitesGrouped);
   return (
     <div className="skyplot-container">
@@ -168,7 +175,7 @@ export const SatelliteMap = ({satellites, cutOffElevation}) => {
         })}
       {Object.keys(satellitesGrouped).map((satName) => {
           const sattelittes = satellitesGrouped[satName];
-          const sat = sattelittes[sattelittes.length - 1];
+          const sat = sattelittes[0];
           return <Satellite key={sat[0]} position={[sat[0], sat[1], 0]} label={satName} />;
         })}
       </Canvas>

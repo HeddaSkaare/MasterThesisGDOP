@@ -46,7 +46,7 @@ def CartesianToGeodetic(X,Y,Z):
     #1
     p = np.sqrt(X**2 + Y**2)
     #2
-    phi0 = (Z/(p*(1-e**2)**(-1)))
+    phi0 = (Z/(p*(1-e2)**(-1)))
     #3
     N0 = a**2 / np.sqrt(a**2 * np.cos(phi0)**2 + b**2 * np.sin(phi0)**2)
     h = (p / np.cos(phi0)) - N0
@@ -93,13 +93,13 @@ def runData(gnss_list, elevationstring, t, epoch):
     print(daynumber)
     sortData(daynumber)
     gnss_mapping = {
-        'GPS': pd.read_csv(f"DataFrames/{daynumber}/structured_dataG.csv"),
-        'GLONASS': pd.read_csv(f"DataFrames/{daynumber}/structured_dataR.csv"),
-        'Galileo': pd.read_csv(f"DataFrames/{daynumber}/structured_dataE.csv"),
-        'QZSS': pd.read_csv(f"DataFrames/{daynumber}/structured_dataJ.csv"),
-        'BeiDou': pd.read_csv(f"DataFrames/{daynumber}/structured_dataC.csv"),
-        'NavIC': pd.read_csv(f"DataFrames/{daynumber}/structured_dataI.csv"),
-        'SBAS': pd.read_csv(f"DataFrames/{daynumber}/structured_dataS.csv")
+        'GPS': pd.read_csv(f"backend/DataFrames/{daynumber}/structured_dataG.csv"),
+        'GLONASS': pd.read_csv(f"backend/DataFrames/{daynumber}/structured_dataR.csv"),
+        'Galileo': pd.read_csv(f"backend/DataFrames/{daynumber}/structured_dataE.csv"),
+        'QZSS': pd.read_csv(f"backend/DataFrames/{daynumber}/structured_dataJ.csv"),
+        'BeiDou': pd.read_csv(f"backend/DataFrames/{daynumber}/structured_dataC.csv"),
+        'NavIC': pd.read_csv(f"backend/DataFrames/{daynumber}/structured_dataI.csv"),
+        'SBAS': pd.read_csv(f"backend/DataFrames/{daynumber}/structured_dataS.csv")
     }
     elevation = float(elevationstring)
     #create a list that contains the seconds for every halfhour in the epoch when epoch is hours
@@ -113,10 +113,12 @@ def runData(gnss_list, elevationstring, t, epoch):
             positions = get_satellite_positions(gnss_mapping[gnss],gnss,time)
             data = visualCheck(positions, recieverPos0, elevation)
             if not data.empty:
+                print(f"final_list: {data}")
                 LGDF_dict += [data.to_dict()]  
                 LGDF_df += [data]
         final_list.append(LGDF_dict)
         final_listdf.append(LGDF_df)
+    
     return final_list, final_listdf
 
 # test funksjoner

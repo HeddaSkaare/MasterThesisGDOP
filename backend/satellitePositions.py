@@ -79,23 +79,29 @@ def cartesianA_list(data, time, today):
     diff = 720100000000
     theIndex = 0
     i = 0
-    if today:
-        timeBack = time - timedelta(days=1)
-        #find the Datetime that is closes to time, but the datetime has to beback in time compared to time
-        for index, row in data.iterrows():
-            if (row["Datetime"] < timeBack) and ((timeBack-row["Datetime"]).total_seconds() < diff):
-                theIndex = i
-                diff = (timeBack-row["Datetime"]).total_seconds()
-            i += 1
-        tk = TK(diff + 86400)#24t
-    else:
-        #find the Datetime that is closes to time, but the datetime has to beback in time compared to time
-        for index, row in data.iterrows():
-            if (row["Datetime"] < time) and ((time-row["Datetime"]).total_seconds() < diff):
-                theIndex = i
-                diff = (time-row["Datetime"]).total_seconds()
-            i += 1
-        tk = TK(diff)
+    for index, row in data.iterrows():
+        if (row["Datetime"] < time) and ((time-row["Datetime"]).total_seconds() < diff):
+            theIndex = i
+            diff = (time-row["Datetime"]).total_seconds()
+        i += 1
+    tk = TK(diff)
+    # if today:
+    #     timeBack = time - timedelta(days=1)
+    #     #find the Datetime that is closes to time, but the datetime has to beback in time compared to time
+    #     for index, row in data.iterrows():
+    #         if (row["Datetime"] < timeBack) and ((timeBack-row["Datetime"]).total_seconds() < diff):
+    #             theIndex = i
+    #             diff = (timeBack-row["Datetime"]).total_seconds()
+    #         i += 1
+    #     tk = TK(diff + 86400)#24t
+    # else:
+    #     #find the Datetime that is closes to time, but the datetime has to beback in time compared to time
+    #     for index, row in data.iterrows():
+    #         if (row["Datetime"] < time) and ((time-row["Datetime"]).total_seconds() < diff):
+    #             theIndex = i
+    #             diff = (time-row["Datetime"]).total_seconds()
+    #         i += 1
+    #     tk = TK(diff)
     row = data.iloc[theIndex]
     satelite_id = row["satelite_id"]
     Mk = MK(row["M0"],row["sqrt(A)"]**2, row["Delta n0"], tk)
@@ -130,12 +136,12 @@ def cartesianC_list(data, time, today):
                     thetaG0 = gmst_at_midnight(time.year, time.month, time.day) #rad
                     theta_Gc = thetaG0 + 0.7292115*10**(-4) *(row['a2']- 3*60*60)#rad
 
-                    # x = (row["X"] * np.cos(theta_Gc)  - row["Y"] * np.sin(theta_Gc))*1000 -0.36
-                    # y = (row["X"] * np.sin(theta_Gc) + row["Y"] * np.cos(theta_Gc))*1000 + 0.08
-                    # z = (row["Z"])*1000 + 0.18
-                    x = (row["X"])*1000 -0.36
-                    y = (row["Y"])*1000 + 0.08
+                    x = (row["X"] * np.cos(theta_Gc)  - row["Y"] * np.sin(theta_Gc))*1000 -0.36
+                    y = (row["X"] * np.sin(theta_Gc) + row["Y"] * np.cos(theta_Gc))*1000 + 0.08
                     z = (row["Z"])*1000 + 0.18
+                    # x = (row["X"])*1000 -0.36
+                    # y = (row["Y"])*1000 + 0.08
+                    # z = (row["Z"])*1000 + 0.18
                     endRow = [row["satelite_id"],time.strftime("%Y-%m-%dT%H:%M:%S.%f"), x, y,z]
     else:
         timeBack = time - timedelta(hours= 23, minutes = 56)
@@ -209,11 +215,13 @@ def get_satellite_positions(data,gnss,time):
             xyz = cartesianA_list(group, time, today)
             if(xyz != []):
                 positions.loc[len(positions)] = xyz
+    
     elif(gnss == "GLONASS") or (gnss == "SBAS"):
         for key, group in dataGrouped:
             xyz = cartesianC_list(group, time,today)
             if(xyz != []):
                 positions.loc[len(positions)] = xyz
+    #print(f"positions: {positions}")
     return positions
 
 #testing

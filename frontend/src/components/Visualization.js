@@ -27,7 +27,6 @@ const colors = {
   S: '#FF1493',  // Deep Pink
 };
 
-
 function fixData(data) {
   return data.map((satellites) => {
     const finalArray = [];
@@ -59,7 +58,7 @@ function fixData(data) {
         'satellitesData': satellitesData
       });
     });
-
+    console.log(finalArray);
     return finalArray;
   });
 }
@@ -78,10 +77,8 @@ const Visualization = () => {
       new Date(time.getTime() + i * 15 * 60 * 1000).toISOString().slice(11, 16)
     );
     const [DOP, setDOP] = useState([[0,0,0]]);
-
-    useEffect(() => {
-      //setLoading(true);
     
+    useEffect(() => {
       const filteredGNSS = Object.keys(gnssNames).filter((key) => gnssNames[key]);
     
       fetch('http://127.0.0.1:5000/satellites', {
@@ -96,13 +93,12 @@ const Visualization = () => {
           epoch: epoch.toString(),
           GNSS: filteredGNSS,
         }),
-        mode: 'cors'
       })
         .then(response => {
           if (!response.ok) {
             throw new Error('Network response was not ok');
           }
-          return response.json(); 
+          return response.json();
         })
         .then(data => {
           console.log("updated", data);
@@ -113,10 +109,8 @@ const Visualization = () => {
         .catch(error => {
           console.error('There was a problem with the fetch operation:', error);
         });
-      
-
-
     }, [updateData]);
+    
     
   if (updateData) {
     return <p>Loading data...</p>;
@@ -138,7 +132,7 @@ const Visualization = () => {
         </div>
       {/* Satellite Table */}
         <div className="satellite-table">
-          {satellites[satellites.length - 1].map((satelliteGroup, index) => {
+          {satellites[0].map((satelliteGroup, index) => {
             const satType = satelliteGroup.type;
             const color = satelliteGroup.color;
             return (

@@ -268,10 +268,10 @@ def SBASdata(satellitt_id,time, values_list, SV):
     ]
 
 def sortData(daynumber):
-    if os.path.exists("DataFrames/"+ daynumber+"/structured_dataG.csv"):
+    if os.path.exists("backend/DataFrames/"+ daynumber+"/structured_dataG.csv"):
         return
     else:
-        filename = "unzipped/BRDC00IGS_R_2024"+ daynumber+"0000_01D_MN.rnx"
+        filename = "backend//unzipped/BRDC00IGS_R_2024"+ daynumber+"0000_01D_MN.rnx"
         lastned(daynumber)
 
         content = []
@@ -367,21 +367,21 @@ def sortData(daynumber):
                     values_list[j] = floatNumber
 
             Galileiodata(satellitt_id,time,values_list, SV)
-        output_folder = "DataFrames/"+daynumber
+        output_folder = "backend/DataFrames/"+daynumber
         os.makedirs(output_folder, exist_ok=True)
-        file_pathG = os.path.join("DataFrames",daynumber, "structured_dataG.csv")
+        file_pathG = os.path.join(output_folder, "structured_dataG.csv")
         structured_dataG.to_csv(file_pathG, index=False)
-        file_pathR = os.path.join("DataFrames",daynumber, "structured_dataR.csv")
+        file_pathR = os.path.join(output_folder, "structured_dataR.csv")
         structured_dataR.to_csv(file_pathR, index=False)
-        file_pathE = os.path.join( "DataFrames",daynumber, "structured_dataE.csv")
+        file_pathE = os.path.join(output_folder, "structured_dataE.csv")
         structured_dataE.to_csv(file_pathE, index=False)
-        file_pathJ = os.path.join("DataFrames", daynumber, "structured_dataJ.csv")
+        file_pathJ = os.path.join(output_folder, "structured_dataJ.csv")
         structured_dataJ.to_csv(file_pathJ, index=False)
-        file_pathC = os.path.join("DataFrames", daynumber, "structured_dataC.csv")
+        file_pathC = os.path.join(output_folder, "structured_dataC.csv")
         structured_dataC.to_csv(file_pathC, index=False)
-        file_pathI = os.path.join( "DataFrames",daynumber, "structured_dataI.csv")
+        file_pathI = os.path.join( output_folder, "structured_dataI.csv")
         structured_dataI.to_csv(file_pathI, index=False)
-        file_pathS = os.path.join("DataFrames",daynumber, "structured_dataS.csv")
+        file_pathS = os.path.join(output_folder, "structured_dataS.csv")
         structured_dataS.to_csv(file_pathS, index=False)
 
 
