@@ -1,7 +1,6 @@
 import React from 'react';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2'; // Use 'Bar' instead of 'BoxPlot'
-import { useAtomValue } from 'jotai';
 import '../css/boxplot.css';
 
 // Register the components needed for the Bar Chart

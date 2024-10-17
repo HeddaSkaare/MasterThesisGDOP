@@ -52,13 +52,35 @@ def R1(theta):
 def R3(theta):
     return np.array([[np.cos(theta),np.sin(theta),0],[-np.sin(theta),np.cos(theta),0],[0,0,1]])
 
+
+
+def julian_date(year, month, day):
+    # Julian Date calculation
+    if month <= 2:
+        year -= 1
+        month += 12
+    A = math.floor(year / 100)
+    B = 2 - A + math.floor(A / 4)
+    JD = math.floor(365.25 * (year + 4716)) + math.floor(30.6001 * (month + 1)) + day + B - 1524.5
+    return JD
+
+def gmst_at_midnight(year, month, day):
+    J2000 = 2451545.0  # Julian Date of J2000 epoch
+    DAYS_PER_CENTURY = 36525.0 # Days in a Julian century
+    JD = julian_date(year, month, day)
+    T = (JD - J2000) / DAYS_PER_CENTURY
+    GMST = 100.46061837 + 36000.770053608 * T + 0.000387933 * T**2 - (T**3 / 38710000.0)
+    GMST = GMST % 360.0
+    GMST_rad = math.radians(GMST)
+    
+    return GMST_rad
+
 def cartesianA_list(data, time, today):
     diff = 720100000000
     theIndex = 0
     i = 0
     if today:
         timeBack = time - timedelta(days=1)
-    
         #find the Datetime that is closes to time, but the datetime has to beback in time compared to time
         for index, row in data.iterrows():
             if (row["Datetime"] < timeBack) and ((timeBack-row["Datetime"]).total_seconds() < diff):
@@ -93,17 +115,51 @@ def cartesianC_list(data, time, today):
     diff = 18000000000000
     prevRow = []
     endRow = []
+    time = time- timedelta(hours=3)
     if not today:
+        if not data.empty:
+            for index, row in data.iterrows():
+                if (row["Datetime"] < time) and ((time-row["Datetime"]).total_seconds() < diff):
+                    diff = (time-row["Datetime"]).total_seconds()
+                    row["Datetime"] = row["Datetime"] - timedelta(hours=3)
+                    midnight = pd.Timestamp(row["Datetime"].year, row["Datetime"].month, row["Datetime"].day)
+                    te = (row["Datetime"] - midnight).total_seconds()
+                    newTime = row['a2'] 
+                    #print(f"newTime: {newTime}, te: {te}, diff: {diff}")
+
+                    thetaG0 = gmst_at_midnight(time.year, time.month, time.day) #rad
+                    theta_Gc = thetaG0 + 0.7292115*10**(-4) *(row['a2']- 3*60*60)#rad
+
+                    # x = (row["X"] * np.cos(theta_Gc)  - row["Y"] * np.sin(theta_Gc))*1000 -0.36
+                    # y = (row["X"] * np.sin(theta_Gc) + row["Y"] * np.cos(theta_Gc))*1000 + 0.08
+                    # z = (row["Z"])*1000 + 0.18
+                    x = (row["X"])*1000 -0.36
+                    y = (row["Y"])*1000 + 0.08
+                    z = (row["Z"])*1000 + 0.18
+                    endRow = [row["satelite_id"],time.strftime("%Y-%m-%dT%H:%M:%S.%f"), x, y,z]
+    else:
         timeBack = time - timedelta(hours= 23, minutes = 56)
-    if not data.empty:
-        for index, row in data.iterrows():
-            if (row["Datetime"] < time) and ((time-row["Datetime"]).total_seconds() < diff):
-                diff = (time-row["Datetime"]).total_seconds()
-                x = (row["X"] + row["Vx"]*diff + 0.5*row["ax"]*diff**2)*1000
-                y = (row["Y"] + row["Vy"]*diff + 0.5*row["ay"]*diff**2)*1000
-                z = (row["Z"] + row["Vz"]*diff + 0.5*row["az"]*diff**2)*1000
-                endRow = [row["satelite_id"],time.strftime("%Y-%m-%dT%H:%M:%S.%f"), x, y,z] 
-            #prevRow = [row['Datetime'], row["X"], row["Y"],row["Z"]] 
+        if not data.empty:
+            for index, row in data.iterrows():
+                if (row["Datetime"] < timeBack) and ((timeBack-row["Datetime"]).total_seconds() < diff):
+                    diff = (time-row["Datetime"]).total_seconds()
+                    row["Datetime"] = row["Datetime"] - timedelta(hours=3)
+                    midnight = pd.Timestamp(row["Datetime"].year, row["Datetime"].month, row["Datetime"].day)
+                    te = (row["Datetime"] - midnight).total_seconds()
+                    newTime = row['a2'] 
+                    #print(f"newTime: {newTime}, te: {te}, diff: {diff}")
+
+                    thetaG0 = gmst_at_midnight(time.year, time.month, time.day) #rad
+                    theta_Gc = thetaG0 + 0.7292115*10**(-4) *(row['a2']- 3*60*60)#rad
+
+                    # x = (row["X"] * np.cos(theta_Gc)  - row["Y"] * np.sin(theta_Gc))*1000 -0.36
+                    # y = (row["X"] * np.sin(theta_Gc) + row["Y"] * np.cos(theta_Gc))*1000 + 0.08
+                    # z = (row["Z"])*1000 + 0.18
+                    x = (row["X"])*1000 -0.36
+                    y = (row["Y"])*1000 + 0.08
+                    z = (row["Z"])*1000 + 0.18
+                    endRow = [row["satelite_id"],time.strftime("%Y-%m-%dT%H:%M:%S.%f"), x, y,z]
+    
     return endRow
 
 #kommer annenhver time 7200 sek
@@ -180,3 +236,8 @@ def get_satellite_positions(data,gnss,time):
 #             if(cartesianB_list(group, time) != []):
 #                 positions.loc[len(positions)] = cartesianB_list(group, time)
 #     return positions
+
+# GLONASSData = pd.read_csv('DataFrames/289/structured_dataR.csv')
+# r01 = GLONASSData.loc[GLONASSData['satelite_id'] == 'R01']
+# r01['Datetime'] = pd.to_datetime(r01['Datetime'] )
+# cartesianC_list(r01, pd.to_datetime("2024-10-15T12:12:02.000"), True)

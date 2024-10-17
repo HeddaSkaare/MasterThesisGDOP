@@ -1,5 +1,5 @@
-import React,{useState} from 'react';
-import { useSetAtom, useAtom, useAtomValue } from 'jotai';
+import React from 'react';
+import { useAtom } from 'jotai';
 import {elevationState, updateDataState,timeState, gnssState, epochState} from '../states/states';
 import '../css/filtering.css';
 

@@ -90,6 +90,7 @@ def runData(gnss_list, elevationstring, t, epoch):
     if given_date.date() == datetime.now().date():
         days_difference -= 1
     daynumber = f"{days_difference:03d}"
+    print(daynumber)
     sortData(daynumber)
     gnss_mapping = {
         'GPS': pd.read_csv(f"DataFrames/{daynumber}/structured_dataG.csv"),

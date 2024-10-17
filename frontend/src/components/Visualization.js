@@ -1,5 +1,4 @@
 
-import { Html, OrbitControls } from '@react-three/drei';
 import React, { useEffect, useState } from 'react';
 import { useAtom, useAtomValue } from 'jotai'
 import {elevationState, updateDataState,timeState, gnssState, epochState} from '../states/states';
@@ -66,9 +65,9 @@ function fixData(data) {
 }
 
 // Main visualization component
-const Visualization = ({ }) => {
+const Visualization = () => {
     const [satellites,setSatellites] = useState([])
-    const [loading,setLoading] = useState(false);
+    // eslint-disable-next-line no-unused-vars  
     const [error, setError] = useState('')
     const [updateData,setUpdateData] = useAtom(updateDataState);
     const gnssNames = useAtomValue(gnssState);
@@ -97,7 +96,7 @@ const Visualization = ({ }) => {
           epoch: epoch.toString(),
           GNSS: filteredGNSS,
         }),
-        mode: 'cors',
+        mode: 'cors'
       })
         .then(response => {
           if (!response.ok) {

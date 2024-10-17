@@ -1,7 +1,7 @@
 import React from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Html,Line, Text } from '@react-three/drei';
-import { Satellite, SatelliteMovement, colors } from './Satellite';
+import { Line, Text } from '@react-three/drei';
+import { Satellite, colors } from './Satellite';
 import { Vector3 } from 'three';
 import '../css/skyplot.css';
 
@@ -51,11 +51,11 @@ const CircleOutline = ({ radius, position, color, lineWidth, text }) => {
         position={position}
         rotation={[0, 0, 0]} />
       <Text
-        position={[points[0][0]+0.2,points[0][1]+0.2, points[0][2]]} // Position of the Y-axis label
-        fontSize={0.2}
+        position={[points[0][0]-1.2,points[0][1]+3.2, points[0][2]]} // Position of the Y-axis label
+        fontSize={0.15}
         color="black"
       >
-        South
+        {text} °
       </Text>
     </>
     
@@ -99,20 +99,20 @@ const Axes = ({ radius = 4.1, color = 'white', lineWidth = 2 }) => {
       {/* Y-axis */}
       <Line
         points={yAxisPoints} // Array of [x, y, z] points
-        color="green" // Y axis color
+        color="grey" // Y axis color
         lineWidth={lineWidth} // Optional: Adjust line thickness
       />
       <Text
         position={[0, radius + 0.1, 0]} // Position of the Y-axis label
-        fontSize={0.1}
-        color="green"
+        fontSize={0.2}
+        color="black"
       >
         0°
       </Text>
       <Text
         position={[0, -radius - 0.1, 0]} // Position of the Y-axis label
-        fontSize={0.1}
-        color="green"
+        fontSize={0.2}
+        color="black"
       >
         180°
       </Text>
@@ -141,7 +141,7 @@ export const SatelliteMap = ({satellites, cutOffElevation}) => {
         }
       });
     }))
-  console.log(satellitesGrouped);
+  //console.log(satellitesGrouped);
   return (
     <div className="skyplot-container">
       <Canvas className="skyplot-canvas" camera={{ position: [0, 0, 10], fov: 50 }}>

@@ -14,5 +14,5 @@ export const gnssState = atom({
     BeiDou: true,
     QZSS: true,
     NavIC: true,
-    SBAS:true,
+    SBAS:false,
   })
