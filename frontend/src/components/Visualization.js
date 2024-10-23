@@ -80,7 +80,13 @@ const Visualization = () => {
     
     useEffect(() => {
       const filteredGNSS = Object.keys(gnssNames).filter((key) => gnssNames[key]);
-    
+      console.log({
+        time: time.toISOString(),
+        elevationAngle: elevationAngle.toString(),
+        epoch: epoch.toString(),
+        GNSS: filteredGNSS,
+      });
+      
       fetch('http://127.0.0.1:5000/satellites', {
         headers: {
           'Accept': 'application/json',
@@ -93,6 +99,7 @@ const Visualization = () => {
           epoch: epoch.toString(),
           GNSS: filteredGNSS,
         }),
+        mode: 'cors',
       })
         .then(response => {
           if (!response.ok) {

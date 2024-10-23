@@ -42,25 +42,7 @@ def satellites():
         return response, 202
 
 if __name__ == '__main__':
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    app.run(host="localhost", port=5000, debug=True)
 
-# @app.route('/initialize', methods=['GET'])
-# def initialize():
-#     #todays date in strdatetimeformat 
-#     today = datetime.today().strftime("%Y-%m-%d %H:%M:%S.%f")
-#     newData, newDataDf = runData(["GPS","GLONASS","BeiDou", "Galileo", "NavIC", "SBAS"], "10", today ,"2")
-#     DOPvalues = best(newDataDf)
-#     return jsonify({'data': newData, 'DOP':DOPvalues }), 200
-
-
-# @app.route('/submit-filter', methods=['POST'])
-# def submit_time():
-#     data = request.json  
-#     start_time = data.get('startTime')
-#     end_time = data.get('endTime')
-#     elevation_angle = data.get('elevationAngle')
-#     gnss = data.get('GNSS')
-#     stored_data = runData(gnss, elevation_angle, start_time, end_time)  # Long-running function
-#     return jsonify({'message': 'Data received successfully'}), 200
 
 

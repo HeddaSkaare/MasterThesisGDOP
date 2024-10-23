@@ -6,6 +6,9 @@
 .pnp.js
 /config
 /scripts
+/config
+
+
 
 # testing
 /coverage
