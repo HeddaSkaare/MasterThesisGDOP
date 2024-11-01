@@ -17,7 +17,7 @@ wgs = ahrs.utils.WGS()
 phi = 62.42953 * np.pi/180
 lam = 7.94942* np.pi/180
 h = 117.5
-
+e = np.e
 #default nullpoint
 # phi = 63.10894307441669 * np.pi/180
 # lam = 10.405541695331934 * np.pi/180
