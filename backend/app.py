@@ -1,7 +1,7 @@
 
 
 from flask import Flask, jsonify, request, make_response
-from computebaner import  runData
+from computebaner import  accuracyData, runData
 from computeDOP import best
 import logging
 from flask_cors import CORS
@@ -11,7 +11,7 @@ from datetime import datetime
 #logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
-CORS(app, resources={r"/satellites": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+CORS(app, resources={r"/satellites": {"origins": "http://localhost:3000"},r"/accuracy": {"origins": "http://localhost:3000"} }, supports_credentials=True)
 
 @app.route('/satellites', methods=['POST', 'OPTIONS'])
 def satellites():
@@ -43,6 +43,7 @@ def satellites():
         response = jsonify({"data": "Data is not ready"})
         response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")  
         return response, 202
+
 
 @app.route('/initialize', methods=['GET'])
 def initialize():

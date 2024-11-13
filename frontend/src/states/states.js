@@ -16,3 +16,13 @@ export const gnssState = atom({
     NavIC: true,
     SBAS:false,
   })
+
+export const gnssState2 = atom({
+    GPS: true,
+    GLONASS: true,
+    Galileo: true,
+    BeiDou: true,
+    QZSS: true,
+    NavIC: true,
+    SBAS:false,
+  })

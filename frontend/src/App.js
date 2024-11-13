@@ -3,6 +3,7 @@ import NavBar from './components/NavBar';
 import FilterComponent from './components/Filtering';
 import Visualization from './components/Visualization';
 
+
 function App() {
 
     return (
@@ -10,6 +11,7 @@ function App() {
             <NavBar />
             <FilterComponent />
             <Visualization />
+  
         </div>
     );
 }

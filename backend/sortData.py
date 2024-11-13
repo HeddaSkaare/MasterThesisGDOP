@@ -269,6 +269,7 @@ def SBASdata(satellitt_id,time, values_list, SV):
 
 def sortData(daynumber):
     if os.path.exists("DataFrames/"+ daynumber+"/structured_dataG.csv"):
+        print(f"Data on day {daynumber} already sorted")
         return
     else:
         filename = "unzipped/BRDC00IGS_R_2024"+ daynumber+"0000_01D_MN.rnx"
