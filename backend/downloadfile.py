@@ -2,7 +2,7 @@ import requests
 import gzip
 import os
 # day = 317
-folder = 'unzipped/'
+folder = 'backend/unzipped/'
 
 def lastned(day):
     print(day)
@@ -20,6 +20,7 @@ def lastned(day):
         with open(filename,'rb') as fd:
             gzip_fd = gzip.GzipFile(fileobj=fd)
             gzip_fd = gzip_fd.read()
+        
         os.remove(filename)
 
         with open(folder+filename[:-3],'wb') as f:

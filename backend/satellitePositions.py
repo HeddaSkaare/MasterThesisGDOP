@@ -79,23 +79,23 @@ def cartesianA_list(data, time, today):
     diff = 720100000000
     theIndex = 0
     i = 0
-    if today:
-        timeBack = time - timedelta(days=1)
+    # if today:
+    #     timeBack = time - timedelta(days=1)
+    #     #find the Datetime that is closes to time, but the datetime has to beback in time compared to time
+    #     for index, row in data.iterrows():
+    #         if (row["Datetime"] < timeBack) and ((timeBack-row["Datetime"]).total_seconds() < diff):
+    #             theIndex = i
+    #             diff = (timeBack-row["Datetime"]).total_seconds()
+    #         i += 1
+    #     tk = TK(diff + 86400)#24t
+    # else:
         #find the Datetime that is closes to time, but the datetime has to beback in time compared to time
-        for index, row in data.iterrows():
-            if (row["Datetime"] < timeBack) and ((timeBack-row["Datetime"]).total_seconds() < diff):
-                theIndex = i
-                diff = (timeBack-row["Datetime"]).total_seconds()
-            i += 1
-        tk = TK(diff + 86400)#24t
-    else:
-        #find the Datetime that is closes to time, but the datetime has to beback in time compared to time
-        for index, row in data.iterrows():
-            if (row["Datetime"] < time) and ((time-row["Datetime"]).total_seconds() < diff):
-                theIndex = i
-                diff = (time-row["Datetime"]).total_seconds()
-            i += 1
-        tk = TK(diff)
+    for index, row in data.iterrows():
+        if (row["Datetime"] < time) and ((time-row["Datetime"]).total_seconds() < diff):
+            theIndex = i
+            diff = (time-row["Datetime"]).total_seconds()
+        i += 1
+    tk = TK(diff)
     row = data.iloc[theIndex]
     satelite_id = row["satelite_id"]
     Mk = MK(row["M0"],row["sqrt(A)"]**2, row["Delta n0"], tk)

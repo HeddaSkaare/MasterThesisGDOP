@@ -76,15 +76,16 @@ def getDayNumber(date):
 def get_gnss(daynumber):
     print('in gnss_mapping')
     gnss_mapping = {
-        'GPS': pd.read_csv(f"DataFrames/{daynumber}/structured_dataG.csv"),
-        'GLONASS': pd.read_csv(f"DataFrames/{daynumber}/structured_dataR.csv"),
-        'Galileo': pd.read_csv(f"DataFrames/{daynumber}/structured_dataE.csv"),
-        'QZSS': pd.read_csv(f"DataFrames/{daynumber}/structured_dataJ.csv"),
-        'BeiDou': pd.read_csv(f"DataFrames/{daynumber}/structured_dataC.csv"),
-        'NavIC': pd.read_csv(f"DataFrames/{daynumber}/structured_dataI.csv"),
-        'SBAS': pd.read_csv(f"DataFrames/{daynumber}/structured_dataS.csv")
+        'GPS': pd.read_csv(f"backend/DataFrames/{daynumber}/structured_dataG.csv"),
+        'GLONASS': pd.read_csv(f"backend/DataFrames/{daynumber}/structured_dataR.csv"),
+        'Galileo': pd.read_csv(f"backend/DataFrames/{daynumber}/structured_dataE.csv"),
+        'QZSS': pd.read_csv(f"backend/DataFrames/{daynumber}/structured_dataJ.csv"),
+        'BeiDou': pd.read_csv(f"backend/DataFrames/{daynumber}/structured_dataC.csv"),
+        'NavIC': pd.read_csv(f"backend/DataFrames/{daynumber}/structured_dataI.csv"),
+        'SBAS': pd.read_csv(f"backend/DataFrames/{daynumber}/structured_dataS.csv")
     }
     return gnss_mapping
+
 #same as above but it return the values that are nececary for visualizing
 def visualCheck(dataframe, recieverPos0, elevationInput):
     LGDF = pd.DataFrame(columns = ["Satelitenumber","time", "X","Y","Z", "azimuth", "zenith"])
@@ -119,8 +120,8 @@ def runData(gnss_list, elevationstring, t, epoch):
     final_list = []
     final_listdf = []
     print('finds visual satellites')
-    for i in range(0, int(epoch)*4):
-        time = pd.to_datetime(t)+ pd.Timedelta(minutes=i*15)
+    for i in range(0, int(epoch)*2):
+        time = pd.to_datetime(t)+ pd.Timedelta(minutes=i*30)
         LGDF_dict = []
         LGDF_df = []
         for gnss in gnss_list:
@@ -133,43 +134,7 @@ def runData(gnss_list, elevationstring, t, epoch):
         final_listdf.append(LGDF_df)
     return final_list, final_listdf
 
-def accuracy(positions_orginal, positions_2):
-    print('in accuracy')
-    #calculate the difference between the two dataframes
-    positions = pd.merge(positions_orginal, positions_2, on = "satelite_id", suffixes = ("_orginal", "_2"))
-    positions["X_diff"] = positions["X_orginal"] - positions["X_2"]
-    positions["Y_diff"] = positions["Y_orginal"] - positions["Y_2"]
-    positions["Z_diff"] = positions["Z_orginal"] - positions["Z_2"]
-    positions["distance"] = np.sqrt(positions["X_diff"]**2 + positions["Y_diff"]**2 + positions["Z_diff"]**2)
-    #calculate the average accuracy
-    averageAccuracy = positions["distance"].mean()
-    return averageAccuracy
-
-def accuracyData(gnss_list, startTime, endTime, timeDelta):
-    print('in accuracyData')
-    daynumber = getDayNumber(startTime)
-    gnss_mapping_orginal = gnss_mapping(daynumber)
-    #create a list that contains the seconds for every halfhour in the epoch when epoch is hours
-    hours_between_sart_and_end = (pd.to_datetime(endTime) - pd.to_datetime(startTime)).seconds/3600
-    iterations = int(hours_between_sart_and_end/timeDelta)
-    print('calculating accurracy')
-    accuracy_dict_time = {}
-    for i in range(iterations):
-        print(f'iteration {i}')
-        time = pd.to_datetime(startTime)+ pd.Timedelta(hours= i*timeDelta)
-        daynumber2 = getDayNumber(time)
-        gnss_mapping_2 = gnss_mapping(daynumber2)
-        accuracy_dict= {}
-        for gnss in gnss_list:
-            positions_orginal = get_satellite_positions(gnss_mapping_orginal[gnss],gnss,time)
-            positions_2 = get_satellite_positions(gnss_mapping_2[gnss],gnss,time)
-            if not (positions_2.empty or positions_orginal.empty):
-                averageAccuracy = accuracy(positions_orginal, positions_2)
-                accuracy_dict[gnss] = averageAccuracy
-
-        accuracy_dict_time[time] = accuracy_dict
-
-    return accuracy_dict_time
+#test = runData(['GPS', 'Galileo', 'GLONASS', 'BeiDou'], '10', '2024-11-12T00:00:00.000', 4)
 # test funksjoner
 # def visualCheck2(dataframe, recieverPos0, elevationInput):
 #     LGDF = pd.DataFrame(columns = ["satelite_id","time", "X","Y","Z", "azimuth", "zenith"])

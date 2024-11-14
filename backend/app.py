@@ -1,9 +1,8 @@
 
 
-from flask import Flask, jsonify, request, make_response
-from computebaner import  accuracyData, runData
+from flask import Flask, jsonify, request
+from computebaner import  runData
 from computeDOP import best
-import logging
 from flask_cors import CORS
 from datetime import datetime
 
