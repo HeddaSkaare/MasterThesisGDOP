@@ -10,7 +10,7 @@ from datetime import datetime
 #logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
-CORS(app, resources={r"/satellites": {"origins": "http://localhost:3000"},r"/accuracy": {"origins": "http://localhost:3000"} }, supports_credentials=True)
+CORS(app, resources={r"/satellites": {"origins": "http://localhost:3000"}}, supports_credentials=True)
 
 @app.route('/satellites', methods=['POST', 'OPTIONS'])
 def satellites():

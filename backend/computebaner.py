@@ -4,7 +4,7 @@ import numpy as np
 import re
 import ahrs
 from sortData import sortData
-from datetime import datetime
+from datetime import datetime, timedelta
 from satellitePositions import get_satellite_positions
 
 T = 558000
@@ -67,9 +67,10 @@ def getDayNumber(date):
     days_difference = (given_date - start_date).days + 1
     if given_date.date() == datetime.now().date():
         days_difference -= 1
+        given_date = given_date - timedelta(days=1)
     daynumber = f"{days_difference:03d}"
-    print(daynumber)
-    sortData(daynumber)
+    print(daynumber, given_date)
+    sortData(daynumber, given_date)
     return daynumber
 
 
@@ -120,7 +121,7 @@ def runData(gnss_list, elevationstring, t, epoch):
     final_list = []
     final_listdf = []
     print('finds visual satellites')
-    for i in range(0, int(epoch)*2):
+    for i in range(0, int(epoch)*2 + 1):
         time = pd.to_datetime(t)+ pd.Timedelta(minutes=i*30)
         LGDF_dict = []
         LGDF_df = []
