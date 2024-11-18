@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Line, Text } from '@react-three/drei';
 import { Satellite, colors } from './Satellite';
@@ -31,18 +31,24 @@ const SatelliteRoute = ({ points, color }) => (
 );
 const CircleOutline = ({ radius, position, color, lineWidth, text }) => {
     const points = [];
+    const textPoints = [];
+
     // Create points along the circumference of a circle
     for (let i = 0; i <= 100; i++) {
       const angle = (i / 100) * Math.PI * 2;
       points.push([Math.cos(angle) * radius, Math.sin(angle) * radius, 0]);
+      textPoints.push([Math.cos(angle) * (radius*0.8), Math.sin(angle+45) * (radius*0.8), 0]);
     }
 
     return (
     <>
-      <mesh position={position} rotation={[0, 0, 0]}>
-          {/* Create the circular geometry */}
-          <ringGeometry args={[radius - 0.05, radius, 64]} />
-          <meshBasicMaterial color="white" side={1} />
+      <mesh
+        position={position}
+        rotation={[0, 0, 0]}
+      >
+        {/* Create the circular geometry */}
+        <ringGeometry args={[radius - 0.05, radius, 64]} />
+        <meshBasicMaterial color="white" side={1} />
       </mesh>
       <Line
         points={points} 
@@ -51,11 +57,11 @@ const CircleOutline = ({ radius, position, color, lineWidth, text }) => {
         position={position}
         rotation={[0, 0, 0]} />
       <Text
-        position={[points[0][0]-1.2,points[0][1]+3.2, points[0][2]]} // Position of the Y-axis label
+        position={[textPoints[0][0],textPoints[0][1], textPoints[0][2]]} // Position of the Y-axis label
         fontSize={0.15}
         color="black"
       >
-        {text} °
+        {text}
       </Text>
     </>
     
@@ -128,6 +134,7 @@ export const SatelliteMap = ({satellites, cutOffElevation}) => {
   const elevations = [0, 40, 70]; // Example: 0°, 40°, 70° elevations
   const radii = elevations.map(elev => radius * Math.cos((elev * Math.PI) / 180));
   let satellitesGrouped = {};
+  // eslint-disable-next-line
   satellites.map((satellitesBefore, index) =>
     satellitesBefore.map((satellites, innerIndex) => {
       satellites.satellitesData.map((satellite) => {
@@ -146,9 +153,9 @@ export const SatelliteMap = ({satellites, cutOffElevation}) => {
     <div className="skyplot-container">
       <Canvas className="skyplot-canvas" camera={{ position: [0, 0, 10], fov: 50 }}>
         <Axes/>
-        <CircleOutline radius={cutOffRad} position={[0, 0, 0]} color={'black'}lineWidth={2} text = {cutOffElevation } />
+        <CircleOutline radius={cutOffRad} position={[0, 0, 0]} color={'black'}lineWidth={2} text = {cutOffElevation.toString() + '°' } />
         {radii.map((radius, index) => (
-          <CircleOutline key={index} radius={radius} position={[0, 0, 0]} color={'grey'} lineWidth={1} text = {''} />
+          <CircleOutline key={index} radius={radius} position={[0, 0, 0]} color={'grey'} lineWidth={1} text = {elevations[index] != 0? (elevations[index].toString() + '°') : ''} />
         ))}
         
         {Object.keys(satellitesGrouped).map((satName) => {

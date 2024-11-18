@@ -74,8 +74,8 @@ const Visualization = () => {
     const elevationAngle = useAtomValue(elevationState);
     const time =useAtomValue(timeState);
     const epoch = useAtomValue(epochState);
-    const labels = Array.from({ length: 4 * epoch }, (_, i) => 
-      new Date(time.getTime() + i * 15 * 60 * 1000).toISOString().slice(11, 16)
+    const labels = Array.from({ length: 2 * epoch +1}, (_, i) => 
+      new Date(time.getTime() + i * 30 * 60 * 1000).toISOString().slice(11, 16)
     );
     const [DOP, setDOP] = useState([[0,0,0]]);
 
@@ -111,7 +111,9 @@ const Visualization = () => {
           setUpdateData(false);
         })
         .catch(error => {
-          console.error('There was a problem with the fetch operation:', error);
+          console.error('Fetch error:', error);
+          console.error('Error name:', error.name);
+          console.error('Error message:', error.message);
         });
       
 
@@ -149,7 +151,7 @@ const Visualization = () => {
                 {satelliteGroup.satellitesData.map((satellite, satIndex) => {
                   const satName = satellite.satName;
                   return (
-                    <div key={satIndex} className="satellite-number">
+                    <div key={satName} className="satellite-number">
                       <p>{satName}</p>
                     </div>
                   );

@@ -65,7 +65,7 @@ const FilterComponent = () => {
         <div>
           <div className='slider-header'>
             <h4>Time Epoch</h4>
-            <span>{hours}</span>
+            <span>{hours} h</span>
           </div>
           <input
             type="range"
