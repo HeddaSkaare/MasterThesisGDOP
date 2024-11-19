@@ -5,7 +5,7 @@ export const updateDataState = atom(false)
 export const timeState = atom(new Date())
 
 export const epochState = atom(2)
-export const elevationState = atom(10)
+export const elevationState = atom(0)
 
 export const gnssState = atom({
     GPS: true,

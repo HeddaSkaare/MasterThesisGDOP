@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import re
 import ahrs
-from sortData import sortData
+from sortDataNew import sortData
 from datetime import datetime, timedelta
 from satellitePositions import get_satellite_positions
 
@@ -39,25 +39,26 @@ T = np.matrix([[-np.sin(phi)*np.cos(lam),-np.sin(phi)*np.sin(lam) , np.cos(phi)]
             [-np.sin(lam), np.cos(lam), 0],
             [np.cos(phi)*np.cos(lam), np.cos(phi)*np.sin(lam), np.sin(phi)]])
 
-def CartesianToGeodetic(X,Y,Z):
-    a = wgs.a
-    b = wgs.b
-    e2 = 1- (b**2) / (a**2)
-    #1
+def CartesianToGeodetic(X, Y, Z, a, b):
+    # Calculate the first eccentricity squared
+    e2 = 1 - (b**2 / a**2)
+    lam = np.arctan2(Y, X)
     p = np.sqrt(X**2 + Y**2)
-    #2
-    phi0 = (Z/(p*(1-e**2)**(-1)))
-    #3
-    N0 = a**2 / np.sqrt(a**2 * np.cos(phi0)**2 + b**2 * np.sin(phi0)**2)
-    h = (p / np.cos(phi0)) - N0
-    phiNew = np.arctan2((Z/(p*(1-e2*N0/(N0+h)))),1)
-    while phiNew != phi0:
-        phi0 = phiNew
-        N0 = a**2 / np.sqrt(a**2 * np.cos(phi0)**2 + b**2 * np.sin(phi0)**2)
-        h = (p / np.cos(phi0)) - N0
-        phiNew = np.arctan2((Z/(p*(1-e2*N0/(N0+h)))),1)
+    phi = np.arctan2(Z, p * (1 - e2))
 
-    return [phiNew*(180/np.pi),np.arctan(Y/X)*(180/np.pi),h]
+    phi_prev = 0
+    h = 0
+    
+    while phi != phi_prev:
+        phi_prev = phi
+        N = a / np.sqrt(1 - e2 * np.sin(phi)**2)
+        h = p / np.cos(phi) - N
+        phi = np.arctan2(Z, p * (1 - e2 * N / (N + h)))
+    
+    phi_deg = np.degrees(phi)
+    lam_deg = np.degrees(lam)
+    
+    return [phi_deg, lam_deg, h]
 
 #get daynumber(for broadcasting ephemeris)
 def getDayNumber(date):

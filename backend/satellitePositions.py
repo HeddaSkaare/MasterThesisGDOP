@@ -5,13 +5,12 @@ import re
 import ahrs
 from datetime import timedelta
 #common functions
-T = 558000
+
 GM = 3.986005*10**14
 we = 7.2921151467 * 10**(-5) 
 c = 299792458
 
-def TS(P,c,dt):
-    return T-(P/c) + dt
+
 def TK(t):
     tm = t
     if(t >302400):
@@ -85,9 +84,10 @@ def cartesianA_list(data, time,usedrows):
             theIndex = i
             diff = (time-row["Datetime"]).total_seconds()
         i += 1
+    
     tk = TK(diff)
     row = data.iloc[theIndex]
-    usedrows.loc[len(usedrows)] = [row["satelite_id"],row["Datetime"]]
+    
     satelite_id = row["satelite_id"]
     Mk = MK(row["M0"],row["sqrt(A)"]**2, row["Delta n0"], tk)
     Ek = EK(Mk,row["e"],3)
@@ -100,6 +100,7 @@ def cartesianA_list(data, time,usedrows):
     rkM = np.array([rk,0,0]).transpose()
     coordinates = R3(-lambdak)@R1(-ik)@R3(-uk)@rkM
 
+    usedrows.loc[len(usedrows)] = [row["satelite_id"],row["Datetime"],time.strftime("%Y-%m-%dT%H:%M:%S.%f"),diff,tk,coordinates[0], coordinates[1],coordinates[2]]
     return [satelite_id,time.strftime("%Y-%m-%dT%H:%M:%S.%f"), coordinates[0], coordinates[1],coordinates[2]]
 
 def cartesianC_list(data, time, today, i):
@@ -115,7 +116,6 @@ def cartesianC_list(data, time, today, i):
                     row["Datetime"] = row["Datetime"] - timedelta(hours=3)
                     midnight = pd.Timestamp(row["Datetime"].year, row["Datetime"].month, row["Datetime"].day)
                     te = (row["Datetime"] - midnight).total_seconds()
-                    newTime = row['a2'] 
                     #print(f"newTime: {newTime}, te: {te}, diff: {diff}")
                     thetaG0 = gmst_at_midnight(time.year, time.month, time.day) #rad
                     theta_Gc = thetaG0 + 0.7292115*10**(-4) *(row['a2']- 3*60*60)#rad
@@ -136,7 +136,6 @@ def cartesianC_list(data, time, today, i):
                     row["Datetime"] = row["Datetime"] - timedelta(hours=3)
                     midnight = pd.Timestamp(row["Datetime"].year, row["Datetime"].month, row["Datetime"].day)
                     te = (row["Datetime"] - midnight).total_seconds()
-                    newTime = row['a2'] 
                     #print(f"newTime: {newTime}, te: {te}, diff: {diff}")
 
                     thetaG0 = gmst_at_midnight(time.year, time.month, time.day) #rad
@@ -151,6 +150,34 @@ def cartesianC_list(data, time, today, i):
                     endRow = [row["satelite_id"],time.strftime("%Y-%m-%dT%H:%M:%S.%f"), x, y,z]
     
     return endRow
+
+def BeiDou(data, time,usedrows):
+    diff = 720100000000
+    theIndex = 0
+    i = 0
+    for index, row in data.iterrows():
+        if (row["Datetime"] <= time) and ((time-row["Datetime"]).total_seconds() <= diff):
+            theIndex = i
+            diff = (time-row["Datetime"]).total_seconds()
+        i += 1
+    
+    tk = TK(diff)
+    row = data.iloc[theIndex]
+    
+    satelite_id = row["satelite_id"]
+    Mk = MK(row["M0"],row["sqrt(A)"]**2, row["Delta n0"], tk)
+    Ek = EK(Mk,row["e"],3)
+    fk = FK(row["e"],Ek)
+    uk = UK(row["omega"], fk,row["C_uc"],row["C_us"])
+    rk = RK(row["sqrt(A)"]**2, row["e"], row["omega"], Ek,fk, row["C_rc"],row["C_us"])
+    ik = IK(row["i0"],row["IDOT"],tk,row["C_ic"],row["omega"],fk,row["C_is"])
+    lambdak= LAMBDAK(row["OMEGA0"],row["OMEGA DOT"], we,tk,row["T_oe"])
+
+    rkM = np.array([rk,0,0]).transpose()
+    coordinates = R3(-lambdak)@R1(-ik)@R3(-uk)@rkM
+
+    usedrows.loc[len(usedrows)] = [row["satelite_id"],row["Datetime"],time.strftime("%Y-%m-%dT%H:%M:%S.%f"),diff,tk,coordinates[0], coordinates[1],coordinates[2]]
+    return [satelite_id,time.strftime("%Y-%m-%dT%H:%M:%S.%f"), coordinates[0], coordinates[1],coordinates[2]]
 
 #kommer annenhver time 7200 sek
 # def cartesianB_list(data, time, today):
@@ -189,7 +216,7 @@ def cartesianC_list(data, time, today, i):
 #     return [satelite_id, time.strftime("%Y-%m-%dT%H:%M:%S.%f") , coordinates[0], coordinates[1],coordinates[2]] 
 
 def get_satellite_positions(data,gnss,time):
-    usedrows = pd.DataFrame(columns = ["satelite_id","time"])
+    usedrows = pd.DataFrame(columns = ["satelite_id","datetime","time", "diff","Tk", "X", "Y", "Z" ])
     data['Datetime'] = pd.to_datetime(data['Datetime'])
     #chech if time is the same day as data[datetime]
     if not data.empty:
@@ -197,9 +224,9 @@ def get_satellite_positions(data,gnss,time):
     else:
         today = False
     days = 0
-    
+
     if(today):
-        days = (time.date() - data.iloc[3]['Datetime'].date()).days
+        days = (time.date() - data.iloc[0]['Datetime'].date()).days
     dataGrouped = data.groupby("satelite_id")
     positions = pd.DataFrame(columns = ["satelite_id","time", "X", "Y", "Z" ])
     if(gnss == "GPS") or (gnss == "Galileo") or(gnss == "BeiDou") or (gnss == "QZSS") or (gnss == "IRNSS"):
