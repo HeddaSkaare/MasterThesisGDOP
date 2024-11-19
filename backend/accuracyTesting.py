@@ -282,7 +282,7 @@ def plotOne(times, acurracys, gnss, satelite_id):
     # Add labels and title
     plt.title("Distance between observed and predicted", fontsize=16)
     plt.xlabel("Time", fontsize=14)
-    plt.ylabel("Distance (km)", fontsize=14)
+    plt.ylabel("Distance (m)", fontsize=14)
     plt.legend(title=satelite_id, fontsize=12, title_fontsize=14, loc='best')
     plt.xticks(rotation=45, fontsize=12)
     plt.yticks(fontsize=12)
@@ -332,7 +332,7 @@ def plotPosXYZ(times, pos_diff, diffx, diffy,diffz, gnss, satelite_id):
     plt.show()
 
 #find mse for all calculations
-gnssList = [ 'BeiDou', 'Galileo', 'QZSS']
+gnssList = [ 'GPS','BeiDou', 'Galileo', 'QZSS']
 
 gnss = 'GPS'
 satelite_id = 'G03'
@@ -380,7 +380,7 @@ NotAcceptedBeiDou = ['C01', 'C59', 'C02', 'C05', 'C62', 'C04', 'C03', 'C60']
 #         highErrorSatellites[satelite_id] = np.max(pos_diff)
 
 # print(highErrorSatellites)
-all = accuracyDataAll(gnssList,NotAcceptedBeiDou, '2024-11-15T12:00:00.000', '2024-11-18T12:00:00.000', 4)
+all = accuracyDataAll(gnssList,NotAcceptedBeiDou, '2024-11-12T12:00:00.000', '2024-11-15T12:00:00.000', 4)
 
 #times1, acurracys = accuracyDataOne(gnss, satelite_id, '2024-11-04T12:00:00.000', '2024-11-07T12:00:00.000', 4)
 #times2, pos_diff, diffx, diffy,diffz = positionsXYZOne(gnss, satelite_id, '2024-11-04T12:00:00.000', '2024-11-06T12:00:00.000', 4)
