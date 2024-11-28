@@ -75,7 +75,7 @@ def gmst_at_midnight(year, month, day):
     return GMST_rad
 
 
-def cartesianA_list(data, time,usedrows):
+def cartesianA_list(data, time):
     diff = 720100000000
     theIndex = 0
     i = 0
@@ -99,8 +99,6 @@ def cartesianA_list(data, time,usedrows):
 
     rkM = np.array([rk,0,0]).transpose()
     coordinates = R3(-lambdak)@R1(-ik)@R3(-uk)@rkM
-
-    usedrows.loc[len(usedrows)] = [row["satelite_id"],row["Datetime"],time.strftime("%Y-%m-%dT%H:%M:%S.%f"),diff,tk,coordinates[0], coordinates[1],coordinates[2]]
     return [satelite_id,time.strftime("%Y-%m-%dT%H:%M:%S.%f"), coordinates[0], coordinates[1],coordinates[2]]
 
 def cartesianC_list(data, time, today, i):
@@ -216,7 +214,6 @@ def BeiDou(data, time,usedrows):
 #     return [satelite_id, time.strftime("%Y-%m-%dT%H:%M:%S.%f") , coordinates[0], coordinates[1],coordinates[2]] 
 
 def get_satellite_positions(data,gnss,time):
-    usedrows = pd.DataFrame(columns = ["satelite_id","datetime","time", "diff","Tk", "X", "Y", "Z" ])
     data['Datetime'] = pd.to_datetime(data['Datetime'])
     #chech if time is the same day as data[datetime]
     if not data.empty:
@@ -229,9 +226,9 @@ def get_satellite_positions(data,gnss,time):
         days = (time.date() - data.iloc[0]['Datetime'].date()).days
     dataGrouped = data.groupby("satelite_id")
     positions = pd.DataFrame(columns = ["satelite_id","time", "X", "Y", "Z" ])
-    if(gnss == "GPS") or (gnss == "Galileo") or(gnss == "BeiDou") or (gnss == "QZSS") or (gnss == "IRNSS"):
+    if(gnss == "GPS") or (gnss == "Galileo") or(gnss == "BeiDou") or (gnss == "QZSS") or (gnss == "NavIC"):
         for key, group in dataGrouped:
-            xyz = cartesianA_list(group, time, usedrows)
+            xyz = cartesianA_list(group, time)
             if(xyz != []):
                 positions.loc[len(positions)] = xyz
     elif(gnss == "GLONASS") or (gnss == "SBAS"):
@@ -240,7 +237,7 @@ def get_satellite_positions(data,gnss,time):
             if(xyz != []):
                 positions.loc[len(positions)] = xyz
 
-    print(usedrows)
+
     return positions
 
 #testing

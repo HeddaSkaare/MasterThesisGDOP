@@ -37,7 +37,6 @@ columnsG = [
     "OMEGA DOT",
     "IDOT",
     "t_tm",
-
 ]
 columnsR = [
     "satelite_id",
