@@ -27,6 +27,8 @@ export const LineChart = ({ data, labels }) => {
   const GDOP = data.map((array) => array[0]);
   const PDOP = data.map((array) => array[1]);
   const TDOP = data.map((array) => array[2]);
+  const HDOP = data.map((array) => array[3]);
+  const VDOP = data.map((array) => array[4]);
 
   // Single chart configuration with multiple datasets
   const chartData = {
@@ -57,6 +59,26 @@ export const LineChart = ({ data, labels }) => {
         data: TDOP,
         borderColor: 'rgba(54, 162, 235, 1)',
         backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        pointBorderColor: 'rgba(54, 162, 235, 1)',
+        pointBackgroundColor: '#fff',
+        pointHoverBackgroundColor: 'rgba(54, 162, 235, 1)',
+        pointHoverBorderColor: 'rgba(220, 220, 220, 1)'
+      },
+      {
+        label: 'HDOP',
+        data: HDOP,
+        borderColor: 'rgba(54, 162, 0, 1)',
+        backgroundColor: 'rgba(54, 162, 0, 0.2)',
+        pointBorderColor: 'rgba(54, 162, 235, 1)',
+        pointBackgroundColor: '#fff',
+        pointHoverBackgroundColor: 'rgba(54, 162, 235, 1)',
+        pointHoverBorderColor: 'rgba(220, 220, 220, 1)'
+      },
+      {
+        label: 'VDOP',
+        data: VDOP,
+        borderColor: 'rgba(54, 0, 235, 1)',
+        backgroundColor: 'rgba(54, 0, 235, 0.2)',
         pointBorderColor: 'rgba(54, 162, 235, 1)',
         pointBackgroundColor: '#fff',
         pointHoverBackgroundColor: 'rgba(54, 162, 235, 1)',
