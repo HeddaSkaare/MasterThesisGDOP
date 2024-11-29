@@ -14,14 +14,19 @@ c = 299792458
 
 wgs = ahrs.utils.WGS()
 #romsdalen
-phi = 62.42953 * np.pi/180
-lam = 7.94942* np.pi/180
-h = 117.5
+# phi = 62.42953 * np.pi/180
+# lam = 7.94942* np.pi/180
+# h = 117.5
 
-#default nullpoint
-# phi = 63.10894307441669 * np.pi/180
-# lam = 10.405541695331934 * np.pi/180
-# h = 115.032
+#Parkeringsplass NTNU 20 grader
+# phi = 63.41457900 * np.pi/180
+# lam = 10.41045326 * np.pi/180
+# h = 42.738
+
+#Parkeringsplass NTNU 10 grader
+phi = 63.41458293  * np.pi/180
+lam = 10.41044691  * np.pi/180
+h =39.689
 
 
 def Cartesian(phi,lam, h):

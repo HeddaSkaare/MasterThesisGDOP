@@ -105,13 +105,13 @@ def cartesianC_list(data, time, today, i):
     diff = 18000000000000
     prevRow = []
     endRow = []
-    time = time+ timedelta(hours=3) #UTC to GLONASS time
+    time = time #UTC to GLONASS time - timedelta(hours=3)
     if not today:#vanlig
         if not data.empty:
             for index, row in data.iterrows():
                 if (row["Datetime"] <= time) and ((time-row["Datetime"]).total_seconds() <= diff):
                     diff = (time-row["Datetime"]).total_seconds()
-                    row["Datetime"] = row["Datetime"] - timedelta(hours=3)
+                    row["Datetime"] = row["Datetime"]
                     midnight = pd.Timestamp(row["Datetime"].year, row["Datetime"].month, row["Datetime"].day)
                     te = (row["Datetime"] - midnight).total_seconds()
                     #print(f"newTime: {newTime}, te: {te}, diff: {diff}")
@@ -131,7 +131,7 @@ def cartesianC_list(data, time, today, i):
             for index, row in data.iterrows():
                 if (row["Datetime"] <= timeBack) and ((timeBack-row["Datetime"]).total_seconds() <= diff):
                     diff = (time-row["Datetime"]).total_seconds()
-                    row["Datetime"] = row["Datetime"] - timedelta(hours=3)
+                    row["Datetime"] = row["Datetime"] 
                     midnight = pd.Timestamp(row["Datetime"].year, row["Datetime"].month, row["Datetime"].day)
                     te = (row["Datetime"] - midnight).total_seconds()
                     #print(f"newTime: {newTime}, te: {te}, diff: {diff}")
