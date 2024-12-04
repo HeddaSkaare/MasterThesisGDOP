@@ -4,9 +4,13 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
-from computebaner import get_gnss, getDayNumber
+from computebaner import get_gnss, getDayNumber, visualCheck, Cartesian
 from satellitePositions import get_satellite_positions
+from computeDOP import best
 
+phi = 63.41458293  * np.pi/180
+lam = 10.41044691  * np.pi/180
+h =39.689
 
 
 #the mse function
@@ -88,6 +92,35 @@ def accuracyDataAll(gnss_list, startTime, endTime, timeDelta):
 
     return accuracy_dict_time
 
+
+def DopDataAll(gnss_list, startTime, endTime, timeDelta):
+    receiverpos = Cartesian(phi,lam,h)
+    #sjekker hver 4 time
+    hours_between_sart_and_end = (pd.to_datetime(endTime) - pd.to_datetime(startTime)).total_seconds() /3600
+    iterations = int(hours_between_sart_and_end/timeDelta)
+    dop_values = []
+    times = []
+    df = pd.DataFrame()
+    numsats = []
+    for i in range(iterations+1):
+        list_df = []
+        time = pd.to_datetime(startTime)+ pd.Timedelta(hours= i*timeDelta)
+
+        time_str = time.strftime("%Y-%m-%dT%H:%M:%S.%f")
+        times.append(time_str)
+        daynumber2 = getDayNumber(time_str)
+        gnss_mapping_new = get_gnss(daynumber2)
+        num = 0
+        for gnss in gnss_list:
+
+            satellites = get_satellite_positions(gnss_mapping_new[gnss],gnss,time)
+            satellites = visualCheck(satellites,receiverpos,10)
+            num+=len(satellites)
+            list_df.append(satellites)
+        numsats.append(num)
+        dop_values.append(best([list_df]))
+        
+    return dop_values,times,numsats
 
 
 def positionsDataOne(gnss,satelite_id, startTime, endTime, timeDelta):
@@ -271,9 +304,49 @@ def plotPosXYZ(times, pos_diff, diffx, diffy,diffz, gnss, satelite_id):
     plt.tight_layout()  # Adjust layout to fit everything nicely
     plt.show()
 
+def plotDOPs(gnss_list, startTime,endTime,timeDelta,doptype):
+    dopData,times,num = DopDataAll(gnss_list, startTime,endTime,timeDelta)
+    gdop = []
+    pdop = []
+    tdop = []
+    hdop = []
+    vdop = []
+    for i in dopData:
+        gdop.append(i[0][0])
+        pdop.append(i[0][1])
+        tdop.append(i[0][2])
+        hdop.append(i[0][3])
+        vdop.append(i[0][4])
+
+    dops = {
+        'GDOP': gdop,
+        'PDOP': pdop,
+        'TDOP': tdop,
+        'HDOP': hdop,
+        'VDOP': vdop
+    }
+
+    plt.figure(figsize=(12, 6))
+    plt.plot(times,dops[doptype],label=doptype,linewidth=2)
+    plt.plot(times,num,label='numsats',linewidth=2)
+
+    plt.grid(visible=True, linestyle='--', alpha=0.6)
+    # Add labels and title
+    plt.title(f"{doptype} values for the constellations in "+str(gnss_list), fontsize=16)
+    plt.xlabel("Time", fontsize=14)
+    plt.ylabel(f"{doptype}", fontsize=14)
+    plt.legend(title=doptype, fontsize=12, title_fontsize=14, loc='best')
+    plt.xticks(rotation=45, fontsize=12)
+    plt.yticks(fontsize=12)
+
+    # Show plot
+    plt.tight_layout()  # Adjust layout to fit everything nicely
+    plt.show()
+
 #find mse for all calculations
 gnssList = [ 'GPS','BeiDou', 'Galileo', 'QZSS', 'NavIC']
 
+#plotDOPs(gnssList,'2024-11-04T00:00:00.000','2024-11-05T12:00:00.000',2,'PDOP')
 
 satellite =[ 'G03','C24', 'E07', 'J04','I09']
 
