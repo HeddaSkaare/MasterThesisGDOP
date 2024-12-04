@@ -16,6 +16,21 @@ wgs = ahrs.utils.WGS()
 phi = 62.42953 * np.pi/180
 lam = 7.94942* np.pi/180
 h = 117.5
+
+def R2(theta):
+    return np.array([[np.cos(theta),0,-np.sin(theta)],
+                    [0,            1,           0],
+                    [np.sin(theta),0,np.cos(theta)]])
+
+def R3(theta):
+    return np.array([[np.cos(theta),np.sin(theta),0],
+                    [-np.sin(theta),np.cos(theta),0],
+                    [0,             0,             1]])
+
+def P2():
+    return np.array([[1,0,0],[0,-1,0],[0,0,1]])
+
+
 def Cartesian(phi,lam, h):
     N = (wgs.a**2)/np.sqrt(wgs.a**2*(np.cos(phi))**2 + wgs.b**2*(np.sin(phi))**2)
     X = (N+h)*np.cos(phi)*np.cos(lam)
@@ -50,15 +65,21 @@ def DOPvalues(satellites, recieverPos0):
         AT = A.T
         ATA = AT@A
         Qxx = np.linalg.inv(ATA)
-
+        Qxx_local = Qxx[0:3,0:3]
+        T = P2()@R2(phi-np.pi/2)@R3(lam-np.pi)
+        Qxx_local = T@Qxx_local@T.T
         GDOP = np.sqrt(Qxx[0][0] + Qxx[1][1] + Qxx[2][2] + Qxx[3][3])
         PDOP = np.sqrt(Qxx[0][0] + Qxx[1][1] + Qxx[2][2])
         TDOP = np.sqrt(Qxx[3][3])
+        HDOP = np.sqrt(Qxx_local[0][0]+Qxx_local[1][1])
+        VDOP = np.sqrt(Qxx_local[2][2])
     else:
         GDOP = 0
         PDOP = 0
         TDOP = 0
-    return GDOP,PDOP,TDOP
+        HDOP = 0
+        VDOP = 0
+    return GDOP,PDOP,TDOP,HDOP,VDOP
 
 def best(satellites):
     final_DOP_values = []
@@ -68,10 +89,10 @@ def best(satellites):
             for index,row in satellitedf.iterrows():
                 satellites_array += [[row["Satelitenumber"],row["time"], row["X"],row["Y"], row["Z"]]]
         if(len(satellites_array) > 0):
-            GDOP, PDOP, TDOP = DOPvalues(satellites_array, recieverPos0)
-            final_DOP_values.append([GDOP, PDOP, TDOP])
+            GDOP, PDOP, TDOP,HDOP,VDOP = DOPvalues(satellites_array, recieverPos0)
+            final_DOP_values.append([GDOP, PDOP, TDOP, HDOP, VDOP])
         else:
-            final_DOP_values.append([0, 0, 0])
+            final_DOP_values.append([0, 0, 0, 0, 0])
     
     return final_DOP_values
 

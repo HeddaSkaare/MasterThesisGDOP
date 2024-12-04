@@ -1,12 +1,12 @@
 import requests
 import gzip
 import os
-#day = 287
-folder = 'unzipped/'
+# day = 317
+folder = 'backend/unzipped/'
 
 def lastned(day):
     print(day)
-    filename = f'BRDC00IGS_R_2024{day}0000_01D_MN.rnx.gz'
+    filename = f'BRD400DLR_S_2024{day}0000_01D_MN.rnx.gz'
 
     url = f'https://cddis.nasa.gov/archive/gnss/data/daily/2024/brdc/{filename}'
 
@@ -20,6 +20,7 @@ def lastned(day):
         with open(filename,'rb') as fd:
             gzip_fd = gzip.GzipFile(fileobj=fd)
             gzip_fd = gzip_fd.read()
+        
         os.remove(filename)
 
         with open(folder+filename[:-3],'wb') as f:
@@ -27,4 +28,4 @@ def lastned(day):
     else:
         print('File Exists')
 
-#lastned(day)
+# lastned(day)

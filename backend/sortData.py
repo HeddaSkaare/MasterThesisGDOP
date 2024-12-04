@@ -5,7 +5,7 @@ import numpy as np
 import re
 import ahrs
 from datetime import datetime
-from dataframes import structured_dataG, structured_dataR, structured_dataE, structured_dataJ, structured_dataC, structured_dataI, structured_dataS
+from dataframes import columnsG, columnsR, columnsE, columnsJ, columnsC, columnsI, columnsS
 import os
 import gzip
 import shutil
@@ -51,8 +51,8 @@ def strToFloat(inputstring):
 
 
 
-def GPSdata(satellitt_id,time, values_list, SV):
-    structured_dataG.loc[len(structured_dataG)]  = [
+def GPSdata(df,satellitt_id,time, values_list, SV):
+    df.loc[len(df)]  = [
         satellitt_id,
         time,
         SV[0],
@@ -86,8 +86,8 @@ def GPSdata(satellitt_id,time, values_list, SV):
         values_list[25]
     ]
 
-def GLONASSdata(satellitt_id,time, values_list, SV):
-    structured_dataR.loc[len(structured_dataR)] = [
+def GLONASSdata(df,satellitt_id,time, values_list, SV):
+    df.loc[len(df)] = [
         satellitt_id,
         time,
         SV[0],
@@ -107,8 +107,8 @@ def GLONASSdata(satellitt_id,time, values_list, SV):
         values_list[11]
     ]
 
-def Galileiodata(satellitt_id,time, values_list, SV):
-    structured_dataE.loc[len(structured_dataE)] = [
+def Galileiodata(df,satellitt_id,time, values_list, SV):
+    df.loc[len(df)] = [
         satellitt_id,
         time,
         SV[0],
@@ -140,9 +140,9 @@ def Galileiodata(satellitt_id,time, values_list, SV):
         values_list[24]
     ]
 
-def QZSSdata(satellitt_id,time, values_list, SV):
+def QZSSdata(df,satellitt_id,time, values_list, SV):
     
-    structured_dataJ.loc[len(structured_dataJ)] = [
+    df.loc[len(df)] = [
         satellitt_id,
         time,
         SV[0],
@@ -176,9 +176,9 @@ def QZSSdata(satellitt_id,time, values_list, SV):
         values_list[25]
     ]
 
-def BeiDoudata(satellitt_id,time, values_list, SV):
+def BeiDoudata(df,satellitt_id,time, values_list, SV):
 
-    structured_dataC.loc[len(structured_dataC)] = [
+    df.loc[len(df)] = [
         satellitt_id,
         time,
         SV[0],
@@ -212,8 +212,8 @@ def BeiDoudata(satellitt_id,time, values_list, SV):
         values_list[25]
     ]
 
-def NavICdata(satellitt_id,time, values_list, SV):
-    structured_dataI.loc[len(structured_dataI)] = [
+def NavICdata(df,satellitt_id,time, values_list, SV):
+    df.loc[len(df)] = [
         satellitt_id,
         time,
         SV[0],
@@ -246,8 +246,8 @@ def NavICdata(satellitt_id,time, values_list, SV):
         values_list[24]
     ]
 
-def SBASdata(satellitt_id,time, values_list, SV):
-    structured_dataS.loc[len(structured_dataS)] = [
+def SBASdata(df,satellitt_id,time, values_list, SV):
+    df.loc[len(df)] = [
         satellitt_id,
         time,
         SV[0],
@@ -267,16 +267,28 @@ def SBASdata(satellitt_id,time, values_list, SV):
         values_list[11]
     ]
 
-def sortData(daynumber):
-    if os.path.exists("DataFrames/"+ daynumber+"/structured_dataG.csv"):
+def sortData(daynumber, date):
+    if os.path.exists(f"backend/DataFrames/{daynumber}/structured_dataG.csv"):
+        print(f"Data on day {daynumber} already sorted")
         return
     else:
-        filename = "unzipped/BRDC00IGS_R_2024"+ daynumber+"0000_01D_MN.rnx"
+        filename = f'backend/unzipped/BRDC00IGS_R_2024{daynumber}0000_01D_MN.rnx'
         lastned(daynumber)
-
+        #current date
+        current_date = date.date()
+        #creates new dataFrames, based on the columns from Dataframes
+        structured_dataG = pd.DataFrame(columns = columnsG)
+        structured_dataR = pd.DataFrame(columns = columnsR) 
+        structured_dataE = pd.DataFrame(columns = columnsE) 
+        structured_dataJ = pd.DataFrame(columns = columnsJ) 
+        structured_dataC = pd.DataFrame(columns = columnsC) 
+        structured_dataI = pd.DataFrame(columns = columnsI) 
+        structured_dataS = pd.DataFrame(columns = columnsS)
         content = []
         with open(filename, "r") as file:
+            print(f"Reading file {filename}")
             content = file.read()
+
         split_index = content.index("END OF HEADER")
         header_part = content[:split_index] # baneinformasjon
         data_part = content[split_index+13:] #satelitt informasjon
@@ -308,6 +320,7 @@ def sortData(daynumber):
                 values_list += cleanedLine
 
             time = datetime(int(cleaned_forstelinje[0]),int(cleaned_forstelinje[1]), int(cleaned_forstelinje[2]), int(cleaned_forstelinje[3]), int(cleaned_forstelinje[4]), int(cleaned_forstelinje[5]))
+            
             #output_folder = cleaned_forstelinje[0] +'-'+ cleaned_forstelinje[1] +'-'+ cleaned_forstelinje[2]
             SV = cleaned_forstelinje[6:]
 
@@ -320,19 +333,20 @@ def sortData(daynumber):
                 if isinstance(value, str):
                     floatNumber = strToFloat(value)
                     values_list[j] = floatNumber
-
-            if "G" in satellitt_id:
-                GPSdata(satellitt_id,time,values_list, SV)
-            elif "R" in satellitt_id:
-                GLONASSdata(satellitt_id,time,values_list, SV)
-            elif "J" in satellitt_id:
-                QZSSdata(satellitt_id,time,values_list, SV)
-            elif "C" in satellitt_id:
-                BeiDoudata(satellitt_id,time,values_list, SV)
-            elif "I" in satellitt_id:
-                NavICdata(satellitt_id,time,values_list, SV)
-            elif "S" in satellitt_id:
-                SBASdata(satellitt_id,time,values_list, SV)
+            
+            if time.date() == current_date:
+                if "G" in satellitt_id:
+                    GPSdata(structured_dataG,satellitt_id,time,values_list, SV)
+                elif "R" in satellitt_id:
+                    GLONASSdata(structured_dataR ,satellitt_id,time,values_list, SV)
+                elif "J" in satellitt_id:
+                    QZSSdata(structured_dataJ,satellitt_id,time,values_list, SV)
+                elif "C" in satellitt_id:
+                    BeiDoudata(structured_dataC,satellitt_id,time,values_list, SV)
+                elif "I" in satellitt_id:
+                    NavICdata(structured_dataI,satellitt_id,time,values_list, SV)
+                elif "S" in satellitt_id:
+                    SBASdata(structured_dataS,satellitt_id,time,values_list, SV)
 
 
         for i in range(0,len(data_for_Galileio)):
@@ -365,23 +379,25 @@ def sortData(daynumber):
                 if isinstance(value, str):
                     floatNumber = strToFloat(value)
                     values_list[j] = floatNumber
+            if time.date() == current_date:
+                Galileiodata(structured_dataE,satellitt_id,time,values_list, SV)
 
-            Galileiodata(satellitt_id,time,values_list, SV)
-        output_folder = "DataFrames/"+daynumber
+        print(f"Processing at {time}")
+        output_folder = "backend/DataFrames/"+daynumber
         os.makedirs(output_folder, exist_ok=True)
-        file_pathG = os.path.join("DataFrames",daynumber, "structured_dataG.csv")
+        file_pathG = os.path.join(output_folder, "structured_dataG.csv")
         structured_dataG.to_csv(file_pathG, index=False)
-        file_pathR = os.path.join("DataFrames",daynumber, "structured_dataR.csv")
+        file_pathR = os.path.join(output_folder, "structured_dataR.csv")
         structured_dataR.to_csv(file_pathR, index=False)
-        file_pathE = os.path.join( "DataFrames",daynumber, "structured_dataE.csv")
+        file_pathE = os.path.join(output_folder, "structured_dataE.csv")
         structured_dataE.to_csv(file_pathE, index=False)
-        file_pathJ = os.path.join("DataFrames", daynumber, "structured_dataJ.csv")
+        file_pathJ = os.path.join(output_folder, "structured_dataJ.csv")
         structured_dataJ.to_csv(file_pathJ, index=False)
-        file_pathC = os.path.join("DataFrames", daynumber, "structured_dataC.csv")
+        file_pathC = os.path.join(output_folder, "structured_dataC.csv")
         structured_dataC.to_csv(file_pathC, index=False)
-        file_pathI = os.path.join( "DataFrames",daynumber, "structured_dataI.csv")
+        file_pathI = os.path.join(output_folder, "structured_dataI.csv")
         structured_dataI.to_csv(file_pathI, index=False)
-        file_pathS = os.path.join("DataFrames",daynumber, "structured_dataS.csv")
+        file_pathS = os.path.join(output_folder, "structured_dataS.csv")
         structured_dataS.to_csv(file_pathS, index=False)
 
 

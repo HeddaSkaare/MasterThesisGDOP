@@ -1,9 +1,8 @@
 
 
-from flask import Flask, jsonify, request, make_response
+from flask import Flask, jsonify, request
 from computebaner import  runData
 from computeDOP import best
-import logging
 from flask_cors import CORS
 from datetime import datetime
 
@@ -43,6 +42,7 @@ def satellites():
         response = jsonify({"data": "Data is not ready"})
         response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")  
         return response, 202
+
 
 @app.route('/initialize', methods=['GET'])
 def initialize():

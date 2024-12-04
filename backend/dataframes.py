@@ -9,7 +9,7 @@ import pandas as pd
 # I: NavIC/IRNSS
 # S: SBAS payload
 
-structured_dataG = pd.DataFrame(columns = [
+columnsG = [
     "satelite_id",
     "Datetime",
     "a0",
@@ -41,8 +41,8 @@ structured_dataG = pd.DataFrame(columns = [
     "IODC",
     "t_tm",
     "Fit Interval"
-])
-structured_dataR = pd.DataFrame(columns = [
+]
+columnsR = [
     "satelite_id",
     "Datetime",
     "a0",
@@ -60,8 +60,8 @@ structured_dataR = pd.DataFrame(columns = [
     "Vz",
     "az",
     "Age of operation",
-])
-structured_dataE = pd.DataFrame(columns = [
+]
+columnsE = [
     "satelite_id",
     "Datetime",
     "a0",
@@ -91,8 +91,8 @@ structured_dataE = pd.DataFrame(columns = [
     "BGDa",
     "BGDb",
     "t_tm"
-])
-structured_dataJ = pd.DataFrame(columns = [
+]
+columnsJ = [
     "satelite_id",
     "Datetime",
     "a0",
@@ -124,8 +124,8 @@ structured_dataJ = pd.DataFrame(columns = [
     "IODC",
     "t_tm",
     "Fit Interval"
-])
-structured_dataC = pd.DataFrame(columns = [
+]
+columnsC = [
     "satelite_id",
     "Datetime",
     "a0",
@@ -157,9 +157,9 @@ structured_dataC = pd.DataFrame(columns = [
     "TGD2",
     "t_tm",
     "AODC"
-])
+]
 
-structured_dataI = pd.DataFrame(columns = [
+columnsI =  [
     "satelite_id",
     "Datetime",
     "a0",
@@ -190,9 +190,9 @@ structured_dataI = pd.DataFrame(columns = [
     "TGD",
     "Spare3",
     "t_tm"
-])
+]
 
-structured_dataS = pd.DataFrame(columns = [
+columnsS =[
     "satelite_id",
     "Datetime",
     "a0",
@@ -210,4 +210,4 @@ structured_dataS = pd.DataFrame(columns = [
     "Vz",
     "az",
     "IODN"
-])
+]
