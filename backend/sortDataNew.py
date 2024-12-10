@@ -110,7 +110,7 @@ def GPSdata(df,satellitt_id,time, values_list, SV,type):
             values_list[16],
             values_list[24],
         ]
-    # elif type == 'CNAV':
+    # if type == 'CNAV':
     #     df.loc[len(df)]  = [
     #         satellitt_id,
     #         time,
@@ -132,7 +132,7 @@ def GPSdata(df,satellitt_id,time, values_list, SV,type):
     #         values_list[16],
     #         values_list[28],
     #     ]
-    # elif type == 'CNAV-2':
+    # elif type == 'CNV2':
     #     df.loc[len(df)]  = [
     #         satellitt_id,
     #         time,
@@ -296,7 +296,7 @@ def QZSSdata(df,satellitt_id,time, values_list, SV,type):
     #         values_list[16],
     #         values_list[28],
     #     ]
-    # elif type == 'CNAV-2':
+    # elif type == 'CNV2':
     #     df.loc[len(df)] = [
     #         satellitt_id,
     #         time,
@@ -594,20 +594,27 @@ def sortData(daynumber, date):
         output_folder = "backend/DataFrames/" + str(daynumber)
         os.makedirs(output_folder, exist_ok=True)
         file_pathG = os.path.join(output_folder, "structured_dataG.csv")
+        structured_dataG = structured_dataG.sort_values(by=['satelite_id', 'Datetime'])
         structured_dataG.to_csv(file_pathG, index=False)
         file_pathR = os.path.join(output_folder, "structured_dataR.csv")
+        structured_dataR = structured_dataR.sort_values(by=['satelite_id', 'Datetime'])
         structured_dataR.to_csv(file_pathR, index=False)
         file_pathE = os.path.join(output_folder, "structured_dataE.csv")
+        structured_dataE = structured_dataE.sort_values(by=['satelite_id', 'Datetime'])
         structured_dataE.to_csv(file_pathE, index=False)
         file_pathJ = os.path.join(output_folder, "structured_dataJ.csv")
+        structured_dataJ = structured_dataJ.sort_values(by=['satelite_id', 'Datetime'])
         structured_dataJ.to_csv(file_pathJ, index=False)
         file_pathC = os.path.join(output_folder, "structured_dataC.csv")
+        structured_dataC = structured_dataC.sort_values(by=['satelite_id', 'Datetime'])
         structured_dataC.to_csv(file_pathC, index=False)
         file_pathI = os.path.join(output_folder, "structured_dataI.csv")
+        structured_dataI = structured_dataI.sort_values(by=['satelite_id', 'Datetime'])
         structured_dataI.to_csv(file_pathI, index=False)
         file_pathS = os.path.join(output_folder, "structured_dataS.csv")
+        structured_dataS = structured_dataS.sort_values(by=['satelite_id', 'Datetime'])
         structured_dataS.to_csv(file_pathS, index=False)
 
 
     
-sortData('320', datetime(2024, 11, 15, 0, 0))
+# sortData('320', datetime(2024, 11, 15, 0, 0))

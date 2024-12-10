@@ -25,9 +25,16 @@ def MK(M0, a,deltan, tk):
 
 def EK(Mk,e, n):
     E = [Mk]
-    for i in range(1,n):
+    i = 1
+    if i==1:
         Enew = E[i-1] + ((Mk-E[i-1]+e*np.sin(E[i-1]))/(1-e*np.cos(E[i-1])))
         E.append(Enew)
+        i += 1
+    else:
+        while abs(E[-1] - E[-2]) > 10**(-n):
+            Enew = E[i-1] + ((Mk-E[i-1]+e*np.sin(E[i-1]))/(1-e*np.cos(E[i-1])))
+            E.append(Enew)
+            i += 1
     return Mk + e*np.sin(E[-1])
 
 def FK(e,Ek):
@@ -76,7 +83,7 @@ def gmst_at_midnight(year, month, day):
 
 
 def cartesianA_list(data, time):
-    diff = 720100000000
+    diff = 720100000000#high start number
     theIndex = 0
     i = 0
     for index, row in data.iterrows():
@@ -87,10 +94,9 @@ def cartesianA_list(data, time):
     
     tk = TK(diff)
     row = data.iloc[theIndex]
-    
     satelite_id = row["satelite_id"]
     Mk = MK(row["M0"],row["sqrt(A)"]**2, row["Delta n0"], tk)
-    Ek = EK(Mk,row["e"],3)
+    Ek = EK(Mk,row["e"],6)
     fk = FK(row["e"],Ek)
     uk = UK(row["omega"], fk,row["C_uc"],row["C_us"])
     rk = RK(row["sqrt(A)"]**2, row["e"], row["omega"], Ek,fk, row["C_rc"],row["C_us"])
@@ -116,7 +122,7 @@ def cartesianC_list(data, time, today, i):
                     te = (row["Datetime"] - midnight).total_seconds()
                     #print(f"newTime: {newTime}, te: {te}, diff: {diff}")
                     thetaG0 = gmst_at_midnight(time.year, time.month, time.day) #rad
-                    theta_Gc = thetaG0 + 0.7292115*10**(-4) *(row['a2']- 3*60*60)#rad
+                    theta_Gc = thetaG0 + 0.7292115*10**(-4) *(row['a2']-3*3600)#rad
                     # x = (row["X"] * np.cos(theta_Gc)  - row["Y"] * np.sin(theta_Gc))*1000 -0.36
                     # y = (row["X"] * np.sin(theta_Gc) + row["Y"] * np.cos(theta_Gc))*1000 + 0.08
                     # z = (row["Z"])*1000 + 0.18
@@ -137,7 +143,7 @@ def cartesianC_list(data, time, today, i):
                     #print(f"newTime: {newTime}, te: {te}, diff: {diff}")
 
                     thetaG0 = gmst_at_midnight(time.year, time.month, time.day) #rad
-                    theta_Gc = thetaG0 + 0.7292115*10**(-4) *(row['a2']- 3*60*60)#rad
+                    theta_Gc = thetaG0 + 0.7292115*10**(-4) *(row['a2']- 3*3600)#rad
 
                     # x = (row["X"] * np.cos(theta_Gc)  - row["Y"] * np.sin(theta_Gc))*1000 -0.36
                     # y = (row["X"] * np.sin(theta_Gc) + row["Y"] * np.cos(theta_Gc))*1000 + 0.08
@@ -161,10 +167,10 @@ def BeiDou(data, time,usedrows):
     
     tk = TK(diff)
     row = data.iloc[theIndex]
-    
+  
     satelite_id = row["satelite_id"]
     Mk = MK(row["M0"],row["sqrt(A)"]**2, row["Delta n0"], tk)
-    Ek = EK(Mk,row["e"],3)
+    Ek = EK(Mk,row["e"],6)
     fk = FK(row["e"],Ek)
     uk = UK(row["omega"], fk,row["C_uc"],row["C_us"])
     rk = RK(row["sqrt(A)"]**2, row["e"], row["omega"], Ek,fk, row["C_rc"],row["C_us"])
