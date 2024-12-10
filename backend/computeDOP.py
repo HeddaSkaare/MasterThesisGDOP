@@ -92,7 +92,7 @@ def best(satellites):
             GDOP, PDOP, TDOP,HDOP,VDOP = DOPvalues(satellites_array, recieverPos0)
             final_DOP_values.append([GDOP, PDOP, TDOP, HDOP, VDOP])
         else:
-            final_DOP_values.append([0, 0, 0])
+            final_DOP_values.append([0, 0, 0, 0, 0])
     
     return final_DOP_values
 

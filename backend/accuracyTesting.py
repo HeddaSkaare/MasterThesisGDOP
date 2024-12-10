@@ -5,13 +5,14 @@ from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 from computeDOP import best
-from computebaner import get_gnss, getDayNumber, visualCheck
+from computebaner import get_gnss, getDayNumber, visualCheck, visualCheck, Cartesian
 from satellitePositions import get_satellite_positions
+from computeDOP import best
 
-phi = 62.42953 * np.pi/180
-lam = 7.94942* np.pi/180
-h = 117.5
-recieverPos = [phi, lam, h] 
+phi = 63.41458293  * np.pi/180
+lam = 10.41044691  * np.pi/180
+h =39.689
+
 
 #the mse function
 def MSE(positions_old, positions_new):
@@ -105,10 +106,87 @@ def accuracyDataAll(gnss_list, startTime, endTime, timeDelta):
         final_list_new.append(LGDF_df_new)
         accuracy_dict_time[time_str] = accuracy_dict
 
-    return accuracy_dict_time, final_list_old, final_list_new
+    return accuracy_dict_time
 
 
+def DopDataAll(gnss_list, startTime, endTime, timeDelta):
+    receiverpos = Cartesian(phi,lam,h)
+    #sjekker hver 4 time
+    hours_between_sart_and_end = (pd.to_datetime(endTime) - pd.to_datetime(startTime)).total_seconds() /3600
+    iterations = int(hours_between_sart_and_end/timeDelta)
+    dop_values = []
+    times = []
+    df = pd.DataFrame()
+    numsats = []
+    for i in range(iterations+1):
+        list_df = []
+        time = pd.to_datetime(startTime)+ pd.Timedelta(hours= i*timeDelta)
 
+        time_str = time.strftime("%Y-%m-%dT%H:%M:%S.%f")
+        times.append(time_str)
+        daynumber2 = getDayNumber(time_str)
+        gnss_mapping_new = get_gnss(daynumber2)
+        num = 0
+        for gnss in gnss_list:
+
+            satellites = get_satellite_positions(gnss_mapping_new[gnss],gnss,time)
+            satellites = visualCheck(satellites,receiverpos,10)
+            num+=len(satellites)
+            list_df.append(satellites)
+        numsats.append(num)
+        dop_values.append(best([list_df]))
+        
+    return dop_values,times,numsats
+
+
+def positionsDataOne(gnss,satelite_id, startTime, endTime, timeDelta):
+    daynumber = getDayNumber(startTime)#4. november
+    gnss_mapping_old = get_gnss(daynumber)
+
+    #sjekker hver 4 time
+    hours_between_sart_and_end = (pd.to_datetime(endTime) - pd.to_datetime(startTime)).total_seconds()/3600
+    iterations = int(hours_between_sart_and_end/timeDelta)
+ 
+    accuracy_time = []
+    pos_list_old = []
+    pos_list_new = []
+    for i in range(iterations+1):
+        time = pd.to_datetime(startTime)+ pd.Timedelta(hours= i*timeDelta)
+        time_str = time.strftime("%Y-%m-%dT%H:%M:%S.%f")
+        daynumber2 = getDayNumber(time_str)
+        gnss_mapping_new = get_gnss(daynumber2)
+
+        #finds also the previous data because if we want to find the positions at 00:00 there may be no data in the current dataframe
+        daynum2_minus_1 = int(daynumber2)  - 1
+        daynumber2_minus_1 = f"{daynum2_minus_1:03d}"
+        gnss_mapping_new2 = get_gnss(daynumber2_minus_1)
+        #add t´the two dataframes toeachotehr
+    
+        #create a dict that has all the constellationsnames as keys and the accuracy as values
+        
+        if satelite_id != '':
+            dataframe_gnss_old = gnss_mapping_old[gnss]
+            dataframe_gnss_new = gnss_mapping_new[gnss]
+            dataframe_gnss_new2 = gnss_mapping_new2[gnss]
+
+            dataframe_satellite_old =dataframe_gnss_old.loc[dataframe_gnss_old['satelite_id'] == satelite_id]
+            dataframe_satellite_new =dataframe_gnss_new.loc[dataframe_gnss_new['satelite_id'] == satelite_id]
+            dataframe_satellite_new2 =dataframe_gnss_new2.loc[dataframe_gnss_new2['satelite_id'] == satelite_id].tail(2)
+            #adds the old dataframes to the new one
+            dataframe_satellite_new = pd.concat([dataframe_satellite_new2,dataframe_satellite_new])
+
+            positions_old = get_satellite_positions(dataframe_satellite_old,gnss,time)
+            positions_new = get_satellite_positions(dataframe_satellite_new,gnss,time)
+
+            if not (positions_new.empty or positions_old.empty):
+                positionsOld, PositionsNew = position(positions_old, positions_new)
+                pos_list_old.append(positionsOld)
+                pos_list_new.append(PositionsNew)
+                accuracy_time.append(time_str[8:10] + '/' + time_str[5:7] + ' ' + time_str[11:13])
+
+        
+
+    return accuracy_time, pos_list_old, pos_list_new
 
 def positionsXYZOne(gnss,satelite_id, startTime, endTime, timeDelta):
     daynumber = getDayNumber(startTime)#4. november
@@ -273,11 +351,49 @@ def plotDOP(doplist_new, doplist_old, time):
     plt.tight_layout()  # Adjust layout to fit everything nicely
     plt.show()
 
-    
+def plotDOPs(gnss_list, startTime,endTime,timeDelta,doptype):
+    dopData,times,num = DopDataAll(gnss_list, startTime,endTime,timeDelta)
+    gdop = []
+    pdop = []
+    tdop = []
+    hdop = []
+    vdop = []
+    for i in dopData:
+        gdop.append(i[0][0])
+        pdop.append(i[0][1])
+        tdop.append(i[0][2])
+        hdop.append(i[0][3])
+        vdop.append(i[0][4])
+
+    dops = {
+        'GDOP': gdop,
+        'PDOP': pdop,
+        'TDOP': tdop,
+        'HDOP': hdop,
+        'VDOP': vdop
+    }
+
+    plt.figure(figsize=(12, 6))
+    plt.plot(times,dops[doptype],label=doptype,linewidth=2)
+    plt.plot(times,num,label='numsats',linewidth=2)
+
+    plt.grid(visible=True, linestyle='--', alpha=0.6)
+    # Add labels and title
+    plt.title(f"{doptype} values for the constellations in "+str(gnss_list), fontsize=16)
+    plt.xlabel("Time", fontsize=14)
+    plt.ylabel(f"{doptype}", fontsize=14)
+    plt.legend(title=doptype, fontsize=12, title_fontsize=14, loc='best')
+    plt.xticks(rotation=45, fontsize=12)
+    plt.yticks(fontsize=12)
+
+    # Show plot
+    plt.tight_layout()  # Adjust layout to fit everything nicely
+    plt.show()
 
 #find mse for all calculations
 gnssList = [ 'GPS','BeiDou', 'Galileo', 'QZSS']
 
+#plotDOPs(gnssList,'2024-11-04T00:00:00.000','2024-11-05T12:00:00.000',2,'PDOP')
 
 satellite =[ 'G24','C24', 'E07', 'J04']
 distance_to_earth = [20182500,21528000, 23222000, 35791500]
