@@ -18,14 +18,15 @@ const gps = {
   S: 'SBAS',
 };
 const colors = {
-  G: '#1E90FF',  // Dodger Blue
-  R: '#32CD32',  // Lime Green
-  E: '#FF6347',  // Tomato Red
-  C: '#FFD700',  // Gold
-  J: '#6A5ACD',  // Slate Blue
-  I: '#FF8C00',  // Dark Orange
-  S: '#FF1493',  // Deep Pink
+  G: '#32CD32',  
+  R: '#FFD700',  
+  E: '#1E90FF',  
+  C: '#FF1493',  
+  J: '#4B0082',  
+  I: '#FF8C00',  
+  S: '#FF6347',  
 };
+
 
 
 function fixData(data) {
