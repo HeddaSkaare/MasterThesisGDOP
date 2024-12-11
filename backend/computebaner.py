@@ -69,7 +69,7 @@ def CartesianToGeodetic(X, Y, Z, a, b):
 def getDayNumber(date):
     print('in getDayNumber', date)
     given_date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%f")
-    start_date = datetime(2024, 1, 1)
+    start_date = datetime(given_date.year, 1, 1)
     days_difference = (given_date - start_date).days + 1
     if given_date.date() == datetime.now().date():
         days_difference -= 1
@@ -78,7 +78,6 @@ def getDayNumber(date):
     print(daynumber, given_date)
     sortData(daynumber, given_date)
     return daynumber
-
 
 def get_gnss(daynumber):
     print('in gnss_mapping')
