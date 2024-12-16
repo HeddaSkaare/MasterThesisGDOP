@@ -132,7 +132,7 @@ def cartesianC_list(data, time, today, i):
                     endRow = [row["satelite_id"],time.strftime("%Y-%m-%dT%H:%M:%S.%f"), x, y,z]
     else:#today
 
-        timeBack = time - timedelta(hours= 23*i, minutes = 56*i)
+        timeBack = time - timedelta(hours= 11, minutes = 15 , seconds=44)
         if not data.empty:
             for index, row in data.iterrows():
                 if (row["Datetime"] <= timeBack) and ((timeBack-row["Datetime"]).total_seconds() <= diff):

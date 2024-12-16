@@ -22,14 +22,30 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+function formatSatTypes(satTypes) {
+  if (satTypes.length === 0) {
+    return '';
+  } else if (satTypes.length === 1) {
+    return satTypes[0];
+  } else if (satTypes.length === 2) {
+    return `${satTypes[0]} and ${satTypes[1]}`;
+  } else {
+    const lastTwo = satTypes.slice(-2);
+    const others = satTypes.slice(0, -2);
+    return `${others.join(', ')}, ${lastTwo[0]} and ${lastTwo[1]}`;
+  }
+}
 
-export const LineChart = ({ data, labels }) => {
+export const LineChart = ({ data, labels, satellites }) => {
   const GDOP = data.map((array) => array[0]);
   const PDOP = data.map((array) => array[1]);
   const TDOP = data.map((array) => array[2]);
   const HDOP = data.map((array) => array[3]);
   const VDOP = data.map((array) => array[4]);
-
+  let satTypes = [];
+  satellites[1].forEach((satelliteGroup) => {
+    satTypes.push(satelliteGroup.type);
+  });
   // Single chart configuration with multiple datasets
   const chartData = {
     labels: labels,
@@ -107,7 +123,7 @@ export const LineChart = ({ data, labels }) => {
 
   return (
     <div className="line-chart-container">
-      <h4>DOP Values Line Chart</h4>
+      <h4>DOP Values Line Chart for {formatSatTypes(satTypes)}</h4>
       <Line data={chartData} options={options} /> {/* Use the 'Line' component here */}
     </div>
   );

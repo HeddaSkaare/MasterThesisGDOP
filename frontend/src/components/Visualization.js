@@ -172,7 +172,7 @@ const Visualization = () => {
 
         {/* Line Chart */}
         <div className="chart-container">
-          <LineChart data={DOP} labels={labels} />
+          <LineChart data={DOP} labels={labels} satellites = {satellites} />
         </div>
       </div>
     </>

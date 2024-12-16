@@ -75,6 +75,7 @@ def getDayNumber(date):
         days_difference -= 1
         given_date = given_date - timedelta(days=1)
     daynumber = f"{days_difference:03d}"
+
     print(daynumber, given_date)
     sortData(daynumber, given_date)
     return daynumber

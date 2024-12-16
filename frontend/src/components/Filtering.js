@@ -70,7 +70,7 @@ const FilterComponent = () => {
           <input
             type="range"
             min="0"
-            max="24"
+            max="48"
             value={hours}
             onChange={handleHourChange}
           />
